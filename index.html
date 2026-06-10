@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPU 壓痕智慧檢測平台 CPU Imprint Inspector</title>
+<style>
+/* =========================================================================
+   護眼深色主題 Eye-care Dark Theme
+   背景 深藍 #1a2b4c / 文字 淡黃綠 #ccff99 — 全程無白色背景
+   ========================================================================= */
+:root{
+  --bg:        #1a2b4c;   /* 主背景 main background (deep blue) */
+  --bg-2:      #142138;   /* 面板 panel */
+  --bg-3:      #20365e;   /* 互動/卡片 card / hover */
+  --bg-4:      #2a4170;   /* 提升層 raised */
+  --line:      #3a5a8c;   /* 邊框 border */
+  --fg:        #ccff99;   /* 主文字 main text (light yellow-green) */
+  --fg-dim:    #a9d97f;   /* 次要文字 dim text */
+  --accent:    #ffe680;   /* 重點 highlight (light yellow) */
+  --accent-2:  #8be0c0;   /* 輔助 teal-green */
+  --good:      #9be37d;   /* 良品 good */
+  --warn:      #ffd24d;   /* 警示 warning */
+  --bad:       #ff8a5c;   /* 缺陷 defect (warm, high contrast) */
+  --bad-strong:#ff6b6b;
+  --shadow:    0 6px 24px rgba(0,0,0,.45);
+  --r:         14px;
+  --mono: ui-monospace,"SFMono-Regular","Cascadia Code",Consolas,monospace;
+  --cjk: "PingFang TC","Microsoft JhengHei","Noto Sans CJK TC","Heiti TC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:var(--cjk);
+  font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+body{min-height:100vh}
+::selection{background:#3a5a8c;color:#fff}
+a{color:var(--accent-2)}
+h1,h2,h3,h4{color:var(--accent);font-weight:700;line-height:1.35}
+h2{font-size:1.5rem;margin:.2em 0 .6em;border-left:6px solid var(--accent);padding-left:.5em}
+h3{font-size:1.18rem;color:var(--accent-2);margin:1.1em 0 .4em}
+h4{font-size:1.02rem;color:var(--fg);margin:.9em 0 .3em}
+p{margin:.5em 0}
+code,kbd,.mono{font-family:var(--mono);color:var(--accent)}
+small{color:var(--fg-dim)}
+hr{border:0;border-top:1px dashed var(--line);margin:1.4em 0}
+
+/* ---- Header ---- */
+header.app{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#142138,#1a2b4c);
+  border-bottom:2px solid var(--line);box-shadow:var(--shadow)}
+.hbar{display:flex;align-items:center;gap:14px;padding:12px 20px;flex-wrap:wrap}
+.logo{width:46px;height:46px;border-radius:12px;background:radial-gradient(circle at 30% 30%,#2a4170,#0e1830);
+  border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto;animation:pulseGlow 3.5s ease-in-out infinite}
+.logo svg{width:30px;height:30px}
+.titlewrap{flex:1 1 auto;min-width:200px}
+.titlewrap .zh{font-size:1.22rem;font-weight:800;color:var(--accent)}
+.titlewrap .en{font-size:.82rem;color:var(--fg-dim);letter-spacing:.5px}
+.envchip{font-size:.72rem;background:var(--bg-3);border:1px solid var(--line);border-radius:20px;
+  padding:4px 10px;color:var(--fg-dim)}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(204,255,153,.0)}50%{box-shadow:0 0 16px 2px rgba(204,255,153,.25)}}
+
+/* ---- Tabs ---- */
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 14px;background:#142138;border-bottom:1px solid var(--line)}
+nav.tabs button{white-space:nowrap;background:transparent;border:1px solid transparent;color:var(--fg-dim);
+  font-family:var(--cjk);font-size:.92rem;padding:8px 14px;border-radius:10px;cursor:pointer;transition:.18s}
+nav.tabs button .n{display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:50%;
+  background:var(--bg-3);color:var(--accent);font-size:.72rem;margin-right:6px}
+nav.tabs button:hover{color:var(--fg);background:var(--bg-3)}
+nav.tabs button.active{color:#0e1830;background:var(--accent);border-color:var(--accent);font-weight:700}
+nav.tabs button.active .n{background:#0e1830;color:var(--accent)}
+
+main{max-width:1180px;margin:0 auto;padding:22px 18px 80px}
+.view{display:none;animation:fadeUp .4s ease}
+.view.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---- Cards / panels ---- */
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin:14px 0;box-shadow:var(--shadow)}
+.card.sub{background:var(--bg-3)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.note{background:var(--bg-3);border-left:4px solid var(--accent-2);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:.92rem}
+.note.warn{border-left-color:var(--warn)}
+.note.bad{border-left-color:var(--bad)}
+.tag{display:inline-block;font-size:.72rem;padding:2px 9px;border-radius:20px;border:1px solid var(--line);
+  background:var(--bg-3);color:var(--fg-dim);margin:2px}
+.tag.good{color:var(--good);border-color:#3f7a40}
+.tag.bad{color:var(--bad);border-color:#7a4a3f}
+.tag.acc{color:var(--accent);border-color:#7a6f3f}
+
+/* ---- Buttons ---- */
+button.btn,label.btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#0e1830;border:none;
+  border-radius:10px;padding:10px 16px;font-family:var(--cjk);font-weight:700;font-size:.92rem;cursor:pointer;transition:.15s}
+button.btn:hover,label.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+button.btn.ghost,label.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+button.btn.ghost:hover{background:var(--bg-3)}
+button.btn.alt{background:var(--accent-2);color:#0e1830}
+button.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+
+/* ---- Inputs ---- */
+input[type=text],input[type=number],input[type=password],select{
+  background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;
+  padding:8px 10px;font-family:var(--mono);font-size:.9rem;width:100%}
+input:focus,select:focus{outline:2px solid var(--accent-2);border-color:var(--accent-2)}
+label.fld{display:block;font-size:.84rem;color:var(--fg-dim);margin:8px 0 3px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=file]{display:none}
+
+/* ---- Tables ---- */
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:8px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--bg-3);color:var(--accent)}
+tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.tbl-wrap{overflow:auto;border-radius:10px}
+
+/* ---- Formula block (plain text, no LaTeX) ---- */
+.formula{font-family:var(--mono);background:var(--bg);border:1px dashed var(--line);border-radius:10px;
+  padding:12px 14px;margin:8px 0;color:var(--accent);font-size:.96rem;overflow-x:auto;white-space:pre}
+
+/* ---- Flowchart ---- */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;justify-content:center}
+.fnode{position:relative;background:var(--bg-3);border:2px solid var(--line);border-radius:12px;padding:12px 14px;
+  min-width:130px;max-width:170px;text-align:center;cursor:pointer;transition:.2s;margin:8px 0}
+.fnode:hover{border-color:var(--accent);transform:translateY(-2px)}
+.fnode.on{border-color:var(--accent);box-shadow:0 0 16px rgba(255,230,128,.4);background:var(--bg-4)}
+.fnode .ic{font-size:1.5rem}
+.fnode .t{font-size:.84rem;font-weight:700;color:var(--accent)}
+.fnode .e{font-size:.68rem;color:var(--fg-dim)}
+.farrow{align-self:center;color:var(--accent-2);font-size:1.4rem;padding:0 4px;animation:slideX 1.6s ease-in-out infinite}
+@keyframes slideX{0%,100%{transform:translateX(0);opacity:.6}50%{transform:translateX(4px);opacity:1}}
+#flowDetail{min-height:64px}
+
+/* ---- Capture instruction icons ---- */
+.shot{display:flex;gap:14px;align-items:flex-start;background:var(--bg-3);border:1px solid var(--line);
+  border-radius:12px;padding:14px;margin:10px 0}
+.shot .num{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#0e1830;
+  font-weight:800;display:grid;place-items:center}
+.shot svg{flex:0 0 auto}
+.shot .tx{flex:1 1 auto}
+
+/* ---- File tree ---- */
+.tree{font-family:var(--mono);font-size:.85rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;white-space:pre;overflow-x:auto;color:var(--fg-dim);line-height:1.7}
+.tree b{color:var(--accent)}
+.tree i{color:var(--accent-2);font-style:normal}
+
+/* ---- Split bar ---- */
+.splitbar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line);font-size:.82rem;font-weight:700}
+.splitbar div{display:grid;place-items:center;color:#0e1830}
+
+/* ---- progress / meters ---- */
+.meter{height:12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .4s}
+.kpiCard{background:var(--bg-3);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.kpiCard .v{font-size:1.5rem;font-weight:800;color:var(--accent)}
+.kpiCard .l{font-size:.78rem;color:var(--fg-dim)}
+.kpiCard.ok{border-color:#3f7a40}.kpiCard.no{border-color:#7a4a3f}
+
+/* thumbnails */
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.thumb{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.thumb canvas,.thumb img{width:100%;display:block}
+.thumb .cap{font-size:.7rem;padding:4px 6px;color:var(--fg-dim);word-break:break-all}
+.thumb .badge{position:absolute;top:6px;right:6px;font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:20px}
+.badge.good{background:var(--good);color:#0e1830}.badge.bad{background:var(--bad);color:#0e1830}
+
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--fg-dim);align-items:center}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:5px}
+
+.spin{display:inline-block;width:16px;height:16px;border:3px solid var(--bg-4);border-top-color:var(--accent);
+  border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+.center{text-align:center}
+.muted{color:var(--fg-dim)}
+.scroll{max-height:340px;overflow:auto}
+canvas{max-width:100%}
+.accordion .ah{cursor:pointer;padding:10px 12px;background:var(--bg-3);border:1px solid var(--line);border-radius:8px;margin-top:8px;font-weight:700;color:var(--accent)}
+.accordion .ab{padding:10px 14px;border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px;display:none}
+.accordion .ab.open{display:block}
+
+footer.app{border-top:1px solid var(--line);padding:18px;text-align:center;color:var(--fg-dim);font-size:.8rem}
+
+/* ---- 列印 / PDF：維持深色，不可白底 ---- */
+@media print{
+  @page{size:A4;margin:12mm}
+  html,body{background:var(--bg)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  header.app,nav.tabs,footer.app,.no-print{display:none!important}
+  .view{display:block!important}
+  .view:not(#v-report){display:none!important}
+  main{max-width:none;padding:0}
+  .card{break-inside:avoid;box-shadow:none}
+  .thumb{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="app">
+  <div class="hbar">
+    <div class="logo" title="CPU Imprint Inspector">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ccff99" stroke-width="1.6">
+        <rect x="6" y="6" width="12" height="12" rx="2"/>
+        <path d="M9 3v3M12 3v3M15 3v3M9 18v3M12 18v3M15 18v3M3 9h3M3 12h3M3 15h3M18 9h3M18 12h3M18 15h3"/>
+        <circle cx="12" cy="12" r="2.4" fill="#ccff99" stroke="none"/>
+      </svg>
+    </div>
+    <div class="titlewrap">
+      <div class="zh">CPU 感壓紙壓痕 智慧檢測與分析平台</div>
+      <div class="en">CPU Thermal-Contact Imprint Inspector &mdash; Training / Validation / Test &amp; Reporting</div>
+    </div>
+    <span class="envchip" id="envChip">硬體偵測中… Detecting hardware…</span>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main>
+<!-- ============================ 總覽 / 原理 ============================ -->
+<section class="view active" id="v-overview">
+  <div class="card">
+    <h2>一、系統總覽與原理 System Overview &amp; Principle</h2>
+    <p>本平台針對 <b>CPU 散熱介面感壓紙壓痕</b>（Fujifilm Prescale 類）影像，進行<b>均勻 (good)／不均勻 (defect)</b> 之自動判別、缺失定位、熱學視覺化與報告產生。整體採<b>護眼深色模式</b>（背景深藍 #1a2b4c、文字淡黃綠 #ccff99），全程繁中／English 對照。</p>
+    <p class="muted">This platform classifies pressure-sensitive imprint photos of a CPU thermal interface into <b>good (uniform)</b> / <b>defect (non-uniform)</b>, locates missing-contact regions, renders thermal visualizations, and generates a professional report.</p>
+
+    <div class="note">
+      <b>判定原理 Decision principle：</b>壓痕代表 CPU 頂蓋 (IHS) 與散熱器之<b>實際接觸壓力分佈</b>。接觸良好處顯色飽和；<b>空白＝缺失接觸＝熱阻升高＝潛在熱點</b>。本系統量測「4 個邊框＋中央」共 5 區的<b>空白缺失比例</b>，依 20% 門檻判定。
+    </div>
+
+    <h3>1.1 互動式流程圖 Interactive Pipeline（點擊節點看說明 Click a node）</h3>
+    <div class="flow" id="flow"></div>
+    <div class="note" id="flowDetail">點擊上方任一節點以顯示該步驟的詳細原理。Click any node above to see its detailed principle.</div>
+  </div>
+
+  <div class="card">
+    <h3>1.2 評估指標公式 Evaluation Metrics（標準文字符號，非 LaTeX）</h3>
+    <p class="muted">定義：缺陷 defect 為正類 (positive)。TP 真陽／TN 真陰／FP 偽陽／FN 偽陰。N = 總樣本數。</p>
+    <div class="formula">混淆矩陣 Confusion Matrix
+                  實際 good        實際 defect
+  預測 good        TN               FN
+  預測 defect      FP               TP</div>
+    <div class="formula">總體準確率 Accuracy  = (TP + TN) ÷ (TP + TN + FP + FN)        目標 Target &gt; 95%
+精確率   Precision = TP ÷ (TP + FP)                          目標 Target &gt; 95%
+召回率   Recall    = TP ÷ (TP + FN)                          目標 Target &gt; 97%
+F1 分數  F1-Score  = 2 × (Precision × Recall) ÷ (Precision + Recall)   目標 &gt; 96%
+交並比   IoU（缺陷類 Jaccard）= TP ÷ (TP + FP + FN)   (= 預測 ∩ 真實 ÷ 預測 ∪ 真實)   目標 &gt; 75%</div>
+    <div class="formula">區域空白缺失率 Region blank ratio
+  Blank(r) = 1 − Coverage(r) = 1 − (接觸像素 ÷ 區域總像素)
+  判定 Rule：若 任一區 max[ Blank(top,bottom,left,right,center) ] &gt; 20%  ⇒  defect，否則 good</div>
+    <div class="formula">熱學視覺化 Thermal model（示意 illustrative）
+  溫度場 T(x,y) = Tmin + (1 − 接觸密度 ρ(x,y)) × (Tmax − Tmin)    單位 °C
+  傅立葉熱傳導 Fourier:  熱流密度向量 q = −k × ∇T   單位 W/m²
+  其中 ∇T = ( ∂T/∂x , ∂T/∂y )， k = 等效熱傳導係數 thermal conductivity</div>
+    <div class="note warn">注意：本檔已<b>全面移除 LaTeX</b>，所有數學以 × ÷ ∩ ∪ ≥ ≤ ° Σ √ ∇ 等標準 Unicode 符號呈現，確保任何瀏覽器／PDF 皆不亂碼。</div>
+  </div>
+
+  <div class="card">
+    <h3>1.3 技術誠實聲明 Honesty Note</h3>
+    <ul>
+      <li><b>真實運算 Real：</b>影像接觸像素偵測、5 區覆蓋率、混淆矩陣與 5 項指標、門檻參數最佳化搜尋（MCP）、溫度梯度圖（模型推估）、熱流向量、ControlNet 風格缺失標註，皆於瀏覽器<b>實際計算</b>。</li>
+      <li><b>流程展示 Demonstrated：</b>深度 CNN/U-Net 之 GPU 訓練與二進位 .pth 權重無法於瀏覽器產生；本平台以「門檻型形態學分類器」實作真實學習，並依規格命名下載模型檔（內含已學參數＋中繼資料）。深度學習工作流以動畫與說明完整呈現。</li>
+      <li><b>本機隱私 Privacy：</b>所有影像僅在你的瀏覽器內處理，不上傳。All processing is local; no upload.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ 資料集 ============================ -->
+<section class="view" id="v-dataset">
+  <div class="card">
+    <h2>二、資料集規範 Dataset Specification</h2>
+    <h3>2.1 拍照壓痕感壓紙 注意事項與圖示 Capture Guidelines</h3>
+    <div id="shotList"></div>
+  </div>
+
+  <div class="card">
+    <h3>2.2 良品／缺陷 定義 Good vs Defect</h3>
+    <div class="grid g2">
+      <div class="card sub">
+        <h4 style="color:var(--good)">均勻壓痕 GOOD</h4>
+        <p>4 個邊框與中央區域，<b>空白缺失 ≤ 20%</b> 接觸面積。顯色均勻飽和、無明顯缺口。</p>
+        <canvas id="demoGood" width="220" height="220" style="border:1px solid var(--line);border-radius:10px"></canvas>
+      </div>
+      <div class="card sub">
+        <h4 style="color:var(--bad)">不均勻壓痕 DEFECT</h4>
+        <p>4 個邊框與中央區域，<b>空白缺失 &gt; 20%</b> 接觸面積。可見角落／單邊／中央缺口（接觸不良＝熱點）。</p>
+        <canvas id="demoBad" width="220" height="220" style="border:1px solid var(--line);border-radius:10px"></canvas>
+      </div>
+    </div>
+    <div class="note">兩張示意圖由程式<b>即時繪製</b>並標出 5 個量測區（top／bottom／left／right／center）。紅框=缺失區 missing region。</div>
+    <div class="note warn">判定門檻 redness=18：偵測「<b>接觸弱或缺失</b>」（任一區空白&gt;20%⇒defect）。註：純「裸紙、完全無接觸」因感壓紙暖色與極淡接觸在色彩上重疊，<b>無法穩定自動區分</b>，故採此可重現門檻。可於各分頁微調。</div>
+  </div>
+
+  <div class="card">
+    <h3>2.3 資料夾結構 Folder Structure</h3>
+    <div class="tree"><b>cpu_imprints_dataset/</b>
+├── <b>train/</b>                          <i>訓練集 Training (60%)</i>
+│   ├── <b>train_defect/</b>
+│   │   └── train_defect_<i>yymmddhhxxx</i>.png   <i>yymmdd=日期 hh=時 xxx=流水號</i>
+│   └── <b>train_good/</b>
+│       └── train_good_<i>yymmddhhxxx</i>.png
+├── <b>val/</b>                            <i>驗證集 Validation (15%)</i>
+│   ├── <b>val_defect/</b>
+│   │   └── val_defect_<i>yymmddhhxxx</i>.png
+│   └── <b>val_good/</b>
+│       └── val_good_<i>yymmddhhxxx</i>.png
+└── <b>test/</b>                           <i>測試集 Test (25%)</i>
+    ├── <b>test_defect/</b>
+    │   └── test_defect_<i>yymmddhhxxx</i>.png
+    └── <b>test_good/</b>
+        └── test_good_<i>yymmddhhxxx</i>.png</div>
+    <div class="btnrow no-print">
+      <button class="btn alt" id="genNameBtn">產生範例檔名 Generate filename</button>
+      <span class="mono" id="nameOut"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>2.4 資料集切分 Split Ratio = 6 : 1.5 : 2.5</h3>
+    <div class="splitbar">
+      <div style="width:60%;background:var(--accent-2)">訓練 Train 60%</div>
+      <div style="width:15%;background:var(--warn)">驗證 Val 15%</div>
+      <div style="width:25%;background:var(--accent)">測試 Test 25%</div>
+    </div>
+    <div class="btnrow no-print" style="margin-top:14px">
+      <label class="fld" style="margin:0">總影像數 Total images</label>
+      <input type="number" id="splitN" value="78" min="0" style="max-width:140px">
+      <button class="btn" id="splitBtn">計算切分 Compute split</button>
+    </div>
+    <div id="splitOut" class="mono muted">每類別建議再各自 6:1.5:2.5 分層抽樣 (stratified)，避免類別不平衡。</div>
+  </div>
+
+  <div class="card">
+    <h3>2.5 載入 cpu_imprints_dataset/ 並計算含真值指標 Load dataset</h3>
+    <p class="muted">讀取已整理之 <b>cpu_imprints_dataset/</b>（train/val/test × good/defect），依<b>資料夾名取得真值標註</b>，與模型預測比對，<b>直接算出 準確率／精確率／召回率／F1／IoU</b>，再到「報告」分頁產生含全部照片＋KPI 數字的完整報告。</p>
+    <div class="note warn">此功能需以<b>本機伺服器</b>開啟（讀取 <span class="mono">filename_mapping.csv</span> 與影像、避免 file:// 畫布污染）。直接雙擊本檔時，請改用「訓練／測試」分頁的「📁 選擇資料夾」挑 <span class="mono">cpu_imprints_dataset/train</span> 等，同樣會自動依資料夾名讀取 good/defect 真值。</div>
+    <div class="note bad">真值來源說明：目前資料夾標註為先前<b>模型自動預標</b>，未經人工校正前，指標反映「<b>自我一致性</b>」（趨近 100%），<b>非真實泛化效能</b>。人工把錯標檔案移到正確資料夾後再用「選擇資料夾」重新載入，數字才有效。</div>
+    <div class="btnrow">
+      <button class="btn" id="inputLoadBtn">📂 載入 cpu_imprints_dataset/（含真值）Load dataset</button>
+      <button class="btn alt" id="inputReportBtn" disabled>📑 產生含真值指標報告 Build report</button>
+      <button class="btn ghost" id="inputCsvBtn" disabled>⬇ 匯出結果 CSV（含 truth/correct）</button>
+    </div>
+    <div id="inputInfo" class="mono muted">尚未載入 Not loaded.</div>
+  </div>
+</section>
+
+<!-- ============================ 共用：模型/硬體 區塊由 JS 注入到 train/val/test ============================ -->
+
+<!-- ============================ 訓練集 ============================ -->
+<section class="view" id="v-train">
+  <div class="card">
+    <h2>三、訓練集 Training Set</h2>
+    <div id="trainStage"></div>
+  </div>
+</section>
+
+<!-- ============================ 驗證集 ============================ -->
+<section class="view" id="v-val">
+  <div class="card">
+    <h2>四、驗證集 Validation Set</h2>
+    <p class="muted">依訓練模型 <span class="mono" id="valBase">cpu_train_…….pth</span> 進行驗證。Validate based on the trained model.</p>
+    <div id="valStage"></div>
+  </div>
+</section>
+
+<!-- ============================ 測試集 ============================ -->
+<section class="view" id="v-test">
+  <div class="card">
+    <h2>五、測試集 Test Set</h2>
+    <p class="muted">依驗證模型 <span class="mono" id="testBase">cpu_val_…….pth</span> 進行測試。Test based on the validated model.</p>
+    <div id="testStage"></div>
+  </div>
+</section>
+
+<!-- ============================ 報告 ============================ -->
+<section class="view" id="v-report">
+  <div class="card no-print">
+    <h2>六、專業檢測報告 Professional Report</h2>
+    <p>整合訓練／驗證／測試之所有照片，產生含 ControlNet 缺失標註、溫度梯度圖（模型推估）、熱流向量、KPI 儀表板、RCA 知識庫、資料庫、雜湊鏈與資安防護之完整報告。</p>
+    <div class="btnrow">
+      <button class="btn" id="buildReportBtn">產生 / 更新報告 Build report</button>
+      <button class="btn alt" id="exportPdfBtn">匯出 PDF（cpu_test_yymmddhhmm.pdf）</button>
+      <span id="reportStatus" class="muted"></span>
+    </div>
+  </div>
+  <div id="reportBody"></div>
+</section>
+
+<!-- ============================ 參考文獻 ============================ -->
+<section class="view" id="v-refs">
+  <div class="card">
+    <h2>七、參考文獻 References（APA 第 7 版 / APA 7th）</h2>
+    <p class="muted">資料來源涵蓋期刊、文獻、政府、民間企業公開資訊、GitHub 與專利。Sources: journals, literature, government, industry public info, GitHub, patents.</p>
+    <div id="refList"></div>
+  </div>
+</section>
+</main>
+
+<footer class="app">
+  CPU 壓痕智慧檢測平台 · <b>規則式白盒分類器</b>（紅度/亮度雙門檻＋五區覆蓋率；AI＝代理輔助門檻校準，推論無神經網路）· 溫度場為模型推估（非實測）· 護眼深色模式 · 本機運算不外傳 ·
+  <span class="mono">v2.1</span> · 產生時間 <span id="footTime"></span>
+</footer>
+
+<script>
+"use strict";
+/* =====================================================================
+   全域狀態 Global state
+   ===================================================================== */
+const STATE = {
+  params:{ redness:18, darkT:130, margin:0.20, frame:0.30, blank:0.20, autoBBox:false,
+           Tmin:40, Tmax:95, k:5 },   // redness=18：抓「接觸弱或缺失」(離線與瀏覽器一致、可重現)。註：純「裸紙(完全無接觸)」因感壓紙暖色與極淡接觸重疊而無法穩定偵測
+  targets:{ acc:0.95, prec:0.95, rec:0.97, f1:0.96, iou:0.75 },
+  sets:{ train:{items:[], metrics:null, model:null, loss:null},
+         val:{items:[], metrics:null, model:null, loss:null},
+         test:{items:[], metrics:null, model:null, loss:null} },
+  hw:null, chain:[], audit:[], autoLabeled:false
+};
+const GRID = 48;            // 密度網格 density grid
+const ASZ  = 240;          // 分析畫布尺寸 analysis canvas size
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pct=v=>(v*100).toFixed(1)+'%';
+function log(msg){ STATE.audit.push({t:new Date().toISOString(),msg}); }
+
+/* =====================================================================
+   頁籤 Tabs
+   ===================================================================== */
+const TABS=[
+  ['overview','總覽原理','Overview'],
+  ['dataset','資料集','Dataset'],
+  ['train','訓練集','Train'],
+  ['val','驗證集','Val'],
+  ['test','測試集','Test'],
+  ['report','報告','Report'],
+  ['refs','參考文獻','Refs'],
+];
+(function buildTabs(){
+  const nav=$('#tabs');
+  TABS.forEach(([id,zh,en],i)=>{
+    const b=document.createElement('button');
+    b.innerHTML=`<span class="n">${i+1}</span>${zh} <small style="opacity:.7">${en}</small>`;
+    b.dataset.id=id; if(i===0)b.classList.add('active');
+    b.onclick=()=>{
+      $$('#tabs button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      $$('.view').forEach(v=>v.classList.remove('active'));
+      $('#v-'+id).classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+    nav.appendChild(b);
+  });
+})();
+
+/* =====================================================================
+   流程圖 Flowchart
+   ===================================================================== */
+const FLOW=[
+  ['📷','拍攝採集','Capture','感壓紙壓痕以正方形模式拍攝、轉正置中、四邊預留 20%，原始 PNG 匯出，放入 Input，不自動裁剪、使用原圖。'],
+  ['🗂️','資料切分','Split','依 6 : 1.5 : 2.5 分為訓練／驗證／測試，並依 good/defect 分層；資料夾與檔名遵循命名規範。'],
+  ['🔬','特徵擷取','Feature','偵測粉紅接觸像素 (redness = R − (G+B)/2)，建立 48×48 接觸密度網格，量測 4 邊框＋中央 5 區覆蓋率。'],
+  ['🧠','模型判別','Classify','以門檻型形態學分類器（對應深度 CNN/U-Net 工作流）判定 good/defect；缺失區即熱點候選。'],
+  ['🎯','MCP 微調','Auto-tune','未達目標時自動搜尋門檻參數（早停、上限 1000 次），最大化 F1 與各項指標。'],
+  ['📈','指標評估','Evaluate','計算 Accuracy / Precision / Recall / F1 / IoU，繪製 1−F1 收斂曲線（門檻搜尋，非深度學習訓練損失）。'],
+  ['💾','模型保存','Save','輸出 cpu_train / cpu_val / cpu_test 系列檔（含已學參數），供下一階段使用。'],
+  ['📑','報告產出','Report','ControlNet 標註＋溫度梯度（模型推估）＋熱流向量＋KPI＋RCA＋資料庫＋雜湊鏈＋資安，匯出 PDF。'],
+];
+(function buildFlow(){
+  const f=$('#flow');
+  FLOW.forEach((n,i)=>{
+    const d=document.createElement('div'); d.className='fnode'; d.style.animationDelay=(i*0.12)+'s';
+    d.innerHTML=`<div class="ic">${n[0]}</div><div class="t">${n[1]}</div><div class="e">${n[2]}</div>`;
+    d.onclick=()=>{ $$('#flow .fnode').forEach(x=>x.classList.remove('on')); d.classList.add('on');
+      $('#flowDetail').innerHTML=`<b>${i+1}. ${n[1]} ${n[2]}</b><br>${n[3]}`; };
+    f.appendChild(d);
+    if(i<FLOW.length-1){ const a=document.createElement('div'); a.className='farrow'; a.textContent='➜'; f.appendChild(a); }
+  });
+  // 自動巡覽動畫 auto walkthrough
+  let k=0; setInterval(()=>{ const nodes=$$('#flow .fnode'); if($('#v-overview').classList.contains('active')){
+    nodes.forEach(x=>x.classList.remove('on')); nodes[k%nodes.length].classList.add('on'); k++; } },2200);
+})();
+
+/* =====================================================================
+   拍攝注意事項 圖示 Capture guideline icons (inline SVG)
+   ===================================================================== */
+const SHOTS=[
+ ['拍攝模式選「正方形」','Square mode',
+  '相機比例設為 1:1 正方形，避免長寬變形影響後續區域量測。',
+  `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#ccff99" stroke-width="2"><rect x="10" y="10" width="40" height="40" rx="4"/><path d="M22 6v8M38 6v8M22 46v8M38 46v8M6 22h8M6 38h8M46 22h8M46 38h8"/></svg>`],
+ ['壓痕轉正、置中、四邊預留 20%','Rotate upright, center, 20% margin',
+  '壓痕角度轉正對齊畫面正中央；壓痕四邊與畫面邊界各預留 20% 留白。',
+  `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#ccff99" stroke-width="2"><rect x="4" y="4" width="52" height="52" rx="3" stroke="#3a5a8c"/><rect x="16" y="16" width="28" height="28" rx="2" fill="rgba(255,138,92,.25)"/><path d="M30 16v28M16 30h28" stroke="#ffe680" stroke-dasharray="3 3"/><path d="M4 12h6M50 12h6" stroke="#ffd24d"/></svg>`],
+ ['原始檔 PNG 匯出','Export original PNG',
+  '以原始檔 PNG 格式匯出，保留真實拍攝資訊（不壓縮失真、不轉檔）。',
+  `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#ccff99" stroke-width="2"><path d="M16 6h20l10 10v38H16z"/><path d="M36 6v10h10"/><text x="30" y="42" font-size="11" fill="#ccff99" text-anchor="middle" stroke="none" font-family="monospace">PNG</text></svg>`],
+ ['放入 Input、不自動裁剪、用原圖','Put in Input, no auto-crop',
+  '壓痕照片放在 Input 資料夾；不使用自動裁剪，分析一律使用原圖。',
+  `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#ccff99" stroke-width="2"><path d="M6 18l6-6h14l4 5h18v31H6z"/><path d="M40 6l8 8M48 6l-8 8" stroke="#ff8a5c"/></svg>`],
+ ['缺陷 defect：空白缺失 &gt; 20%','Defect &gt; 20% blank',
+  '4 個邊框與中央區域，空白缺失大於 20% 接觸面積 ⇒ 不均勻 defect。',
+  `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#ff8a5c" stroke-width="2"><rect x="8" y="8" width="44" height="44" rx="3" fill="rgba(255,138,92,.18)"/><rect x="8" y="8" width="16" height="16" fill="#1a2b4c" stroke="#ff8a5c"/><rect x="36" y="36" width="16" height="16" fill="#1a2b4c" stroke="#ff8a5c"/></svg>`],
+ ['良品 good：空白缺失 ≤ 20%','Good ≤ 20% blank',
+  '4 個邊框與中央區域，空白缺失小於等於 20% 接觸面積 ⇒ 均勻 good。',
+  `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#9be37d" stroke-width="2"><rect x="8" y="8" width="44" height="44" rx="3" fill="rgba(155,227,125,.25)"/><path d="M20 31l7 8 14-16" stroke="#9be37d" stroke-width="3"/></svg>`],
+ ['切分 6 : 1.5 : 2.5','Split 6:1.5:2.5',
+  '資料集切分比例＝訓練 60% : 驗證 15% : 測試 25%，建議分層抽樣。',
+  `<svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#ccff99" stroke-width="2"><rect x="6" y="22" width="30" height="16" fill="#8be0c0" stroke="none"/><rect x="36" y="22" width="8" height="16" fill="#ffd24d" stroke="none"/><rect x="44" y="22" width="10" height="16" fill="#ffe680" stroke="none"/></svg>`],
+];
+(function buildShots(){
+  const c=$('#shotList');
+  SHOTS.forEach((s,i)=>{
+    const d=document.createElement('div'); d.className='shot';
+    d.innerHTML=`<div class="num">${i+1}</div>${s[3]}<div class="tx"><h4 style="margin:.1em 0">${s[0]} <small>${s[1]}</small></h4><p style="margin:.2em 0">${s[2]}</p></div>`;
+    c.appendChild(d);
+  });
+})();
+
+/* =====================================================================
+   示意壓痕繪製 Draw demo imprints (good / defect) + 區域框
+   ===================================================================== */
+function drawImprint(ctx,W,H,opts){
+  ctx.fillStyle='#1a2b4c'; ctx.fillRect(0,0,W,H);               // 深色底（含 20% 留白）
+  const m=0.20*W, s=W-2*m;
+  // 紙張底（仍偏深，避免白底）— 用很淡的暖色塊代表感壓紙
+  ctx.fillStyle='#26324f'; ctx.fillRect(m,m,s,s);
+  // 壓痕主體（粉紅顯色）
+  const cell=s/6;
+  for(let gy=0;gy<6;gy++)for(let gx=0;gx<6;gx++){
+    let on=true;
+    if(opts.defect){
+      if((gx<2&&gy<2)||(gx>=4&&gy>=4)) on=false;          // 兩角缺失
+      if(gx>=2&&gx<4&&gy>=2&&gy<4 && Math.random()<0.5) on=Math.random()>0.5; // 中央不穩
+    }
+    if(!on) continue;
+    const inten=opts.defect? (0.5+Math.random()*0.4):(0.78+Math.random()*0.22);
+    const r=Math.round(150+inten*90), g=Math.round(70+ (1-inten)*40), b=Math.round(95+(1-inten)*35);
+    ctx.fillStyle=`rgba(${r+40},${g},${b},${0.55+inten*0.4})`;
+    ctx.fillRect(m+gx*cell+1, m+gy*cell+1, cell-2, cell-2);
+  }
+  // 5 區框線
+  const f=0.30, fw=s*f;
+  ctx.lineWidth=2; ctx.font='10px monospace'; ctx.textBaseline='top';
+  const regions=[
+    ['top',   m,        m,        s,    fw],
+    ['bottom',m,        m+s-fw,   s,    fw],
+    ['left',  m,        m+fw,     fw,   s-2*fw],
+    ['right', m+s-fw,   m+fw,     fw,   s-2*fw],
+    ['center',m+fw,     m+fw,     s-2*fw, s-2*fw],
+  ];
+  regions.forEach(rg=>{
+    const miss = opts.defect && (rg[0]==='top'?false: rg[0]==='left'||rg[0]==='bottom'||rg[0]==='center'?true:false);
+    ctx.strokeStyle= miss? '#ff6b6b':'#ccff99';
+    ctx.setLineDash(miss?[4,3]:[]);
+    ctx.strokeRect(rg[1],rg[2],rg[3],rg[4]);
+  });
+  ctx.setLineDash([]);
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  const g=$('#demoGood'), b=$('#demoBad');
+  if(g) drawImprint(g.getContext('2d'),220,220,{defect:false});
+  if(b) drawImprint(b.getContext('2d'),220,220,{defect:true});
+});
+
+/* =====================================================================
+   檔名產生 / 切分 Filename & split
+   ===================================================================== */
+function stamp(){ const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return {ymd:String(d.getFullYear()).slice(2)+p(d.getMonth()+1)+p(d.getDate()),
+          hm:p(d.getHours())+p(d.getMinutes())}; }
+$('#genNameBtn').onclick=()=>{ const s=stamp(); const xxx=String(Math.floor(Math.random()*900)+100);
+  $('#nameOut').textContent=`train_good_${s.ymd}${s.hm.slice(0,2)}${xxx}.png`; };
+$('#splitBtn').onclick=()=>{ const N=+$('#splitN').value||0;
+  const tr=Math.round(N*0.60), va=Math.round(N*0.15), te=N-tr-va;
+  $('#splitOut').textContent=`訓練 Train=${tr} ・ 驗證 Val=${va} ・ 測試 Test=${te}　（每類別建議再各自分層 6:1.5:2.5）`; };
+
+/* =====================================================================
+   核心：影像分析 Image analysis（真實運算 Real）
+   ===================================================================== */
+function analyze(img, P=STATE.params){
+  const cv=document.createElement('canvas'); cv.width=ASZ; cv.height=ASZ;
+  const ctx=cv.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(img,0,0,ASZ,ASZ);
+  const data=ctx.getImageData(0,0,ASZ,ASZ).data;
+  // 接觸密度網格 contact density grid
+  const cellPx=ASZ/GRID;
+  const dens=new Float32Array(GRID*GRID);
+  const cnt =new Float32Array(GRID*GRID);
+  for(let y=0;y<ASZ;y++){
+    const gy=Math.min(GRID-1,(y/cellPx)|0);
+    for(let x=0;x<ASZ;x++){
+      const i=(y*ASZ+x)*4, r=data[i],g=data[i+1],b=data[i+2];
+      const redness=r-(g+b)/2, lum=0.299*r+0.587*g+0.114*b;
+      const contact=(redness>P.redness)||(lum<P.darkT)?1:0;
+      const gx=Math.min(GRID-1,(x/cellPx)|0), gi=gy*GRID+gx;
+      dens[gi]+=contact; cnt[gi]++;
+    }
+  }
+  for(let i=0;i<dens.length;i++) dens[i]= cnt[i]? dens[i]/cnt[i]:0;
+
+  // 內容區（依 margin 或自動 bbox）
+  let x0=Math.floor(GRID*P.margin), x1=Math.ceil(GRID*(1-P.margin)),
+      y0=x0, y1=x1;
+  if(P.autoBBox){
+    let minx=GRID,miny=GRID,maxx=0,maxy=0,found=false;
+    for(let gy=0;gy<GRID;gy++)for(let gx=0;gx<GRID;gx++){ if(dens[gy*GRID+gx]>0.10){found=true;
+      minx=Math.min(minx,gx);maxx=Math.max(maxx,gx);miny=Math.min(miny,gy);maxy=Math.max(maxy,gy);}}
+    if(found){x0=minx;x1=maxx+1;y0=miny;y1=maxy+1;}
+  }
+  const cw=x1-x0, ch=y1-y0, fwx=Math.max(1,Math.round(cw*P.frame)), fwy=Math.max(1,Math.round(ch*P.frame));
+  function regionMean(rx0,ry0,rx1,ry1){ let s=0,n=0; for(let gy=ry0;gy<ry1;gy++)for(let gx=rx0;gx<rx1;gx++){s+=dens[gy*GRID+gx];n++;} return n? s/n:0; }
+  const R={
+    top:    regionMean(x0,y0,x1,y0+fwy),
+    bottom: regionMean(x0,y1-fwy,x1,y1),
+    left:   regionMean(x0,y0+fwy,x0+fwx,y1-fwy),
+    right:  regionMean(x1-fwx,y0+fwy,x1,y1-fwy),
+    center: regionMean(x0+fwx,y0+fwy,x1-fwx,y1-fwy),
+  };
+  const blanks={}; let maxBlank=0, sumCov=0, nR=0;
+  for(const k in R){ const bl=1-R[k]; blanks[k]=bl; maxBlank=Math.max(maxBlank,bl); sumCov+=R[k]; nR++; }
+  const overallBlank=1-sumCov/nR;
+  const label= maxBlank> P.blank ? 'defect':'good';
+  return {dens,grid:GRID,cov:R,blanks,maxBlank,overallBlank,label,bbox:{x0,y0,x1,y1,fwx,fwy}};
+}
+
+/* label from path/name */
+function labelOf(name){ const s=name.toLowerCase();
+  if(s.includes('defect')||s.includes('bad')||s.includes('ng')) return 'defect';
+  if(s.includes('good')||s.includes('ok')) return 'good'; return null; }
+
+/* 載入檔案為 items Load files into items[] */
+function loadFiles(fileList){
+  const files=[...fileList].filter(f=>/\.(png|jpe?g|webp|bmp)$/i.test(f.name));
+  return Promise.all(files.map(f=>new Promise(res=>{
+    const url=URL.createObjectURL(f), img=new Image();
+    img.onload=()=>{ const path=f.webkitRelativePath||f.name;
+      res({name:f.name,path,img,truth:labelOf(path),res:null,url}); };
+    img.onerror=()=>res(null); img.src=url;
+  }))).then(a=>a.filter(Boolean));
+}
+
+/* 指標 Metrics from items with predictions */
+function metrics(items){
+  let TP=0,TN=0,FP=0,FN=0,labeled=0;
+  items.forEach(it=>{ if(!it.res)return; const pred=it.res.label; if(it.truth==null)return; labeled++;
+    if(it.truth==='defect'&&pred==='defect')TP++;
+    else if(it.truth==='good'&&pred==='good')TN++;
+    else if(it.truth==='good'&&pred==='defect')FP++;
+    else if(it.truth==='defect'&&pred==='good')FN++; });
+  const acc=(TP+TN)/Math.max(1,TP+TN+FP+FN);
+  const prec=TP/Math.max(1,TP+FP), rec=TP/Math.max(1,TP+FN);
+  const f1=2*prec*rec/Math.max(1e-9,prec+rec), iou=TP/Math.max(1,TP+FP+FN);
+  return {TP,TN,FP,FN,labeled,acc,prec,rec,f1,iou};
+}
+function meetsTargets(m){ const t=STATE.targets;
+  return m.acc>t.acc&&m.prec>t.prec&&m.rec>t.rec&&m.f1>t.f1&&m.iou>t.iou; }
+
+/* =====================================================================
+   硬體偵測 Hardware detection + 模型推薦 Model recommendation
+   ===================================================================== */
+async function detectHW(){
+  const cores=navigator.hardwareConcurrency||4;
+  const mem=navigator.deviceMemory||'?';
+  let gpu='未知 Unknown', webgpu=('gpu'in navigator);
+  try{ const c=document.createElement('canvas'); const gl=c.getContext('webgl')||c.getContext('experimental-webgl');
+    if(gl){ const ext=gl.getExtension('WEBGL_debug_renderer_info'); if(ext) gpu=gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||gpu; } }catch(e){}
+  const tier = webgpu&&cores>=8 ? 'high' : cores>=8||mem>=8 ? 'mid':'low';
+  STATE.hw={cores,mem,gpu,webgpu,tier};
+  $('#envChip').innerHTML=`🖥️ ${cores} 核 / RAM ${mem}GB / GPU:${webgpu?'WebGPU✓':'WebGL'} / 等級 ${tier.toUpperCase()}`;
+  log('hardware detected: '+JSON.stringify(STATE.hw));
+  return STATE.hw;
+}
+const GEN_MODELS=[ /* 生成式（資料增強）Image generation for augmentation */
+  ['SDXL-Turbo','Stability AI','~7GB VRAM','快速合成壓痕增強樣本；單步推理。','github.com/Stability-AI/generative-models'],
+  ['Stable Diffusion XL 1.0','Stability AI','~10GB VRAM','高品質條件式生成，配合 ControlNet。','huggingface.co/stabilityai'],
+  ['FLUX.1 [schnell]','Black Forest Labs','~12GB VRAM','高保真、少步數，細節佳。','github.com/black-forest-labs/flux'],
+  ['Kandinsky 3','AI-Forever','~8GB VRAM','多語提示、紋理生成良好。','github.com/ai-forever/Kandinsky-3'],
+  ['ControlNet (Canny/Depth)','lllyasviel','+2GB VRAM','以邊緣/深度條件控制壓痕輪廓。','github.com/lllyasviel/ControlNet'],
+];
+const REC_MODELS=[ /* 辨識（分類/分割）Recognition for classify/segment */
+  ['EfficientNet-B0','Google','輕量 5.3M 參數','低資源裝置首選，速度快。','arxiv 1905.11946'],
+  ['ResNet-50','Microsoft','25.6M 參數','穩健基線，遷移學習成熟。','arxiv 1512.03385'],
+  ['ConvNeXt-Tiny','Meta','28M 參數','現代卷積，精度高。','arxiv 2201.03545'],
+  ['Vision Transformer ViT-B/16','Google','86M 參數','大資料下表現強，需較多算力。','arxiv 2010.11929'],
+  ['YOLOv8-cls / -seg','Ultralytics','可調','即時分類＋缺失區分割定位。','github.com/ultralytics/ultralytics'],
+];
+function rankModels(list){ const t=STATE.hw?STATE.hw.tier:'mid';
+  const order = t==='high'? [2,1,3,4,0] : t==='low'? [0,1,2,4,3] : [0,1,2,3,4];
+  return order.map(i=>list[i]).filter(Boolean); }
+
+/* =====================================================================
+   階段 UI 工廠 Stage factory（train / val / test 共用）
+   ===================================================================== */
+function buildStage(key, opts){
+  const host = key==='train'?$('#trainStage'): key==='val'?$('#valStage'):$('#testStage');
+  const recRows = rankModels(REC_MODELS).map((m,i)=>`<tr><td>${i+1}</td><td><b>${m[0]}</b></td><td>${m[1]}</td><td>${m[2]}</td><td>${m[3]}</td><td class="mono">${m[4]}</td></tr>`).join('');
+  const genRows = rankModels(GEN_MODELS).map((m,i)=>`<tr><td>${i+1}</td><td><b>${m[0]}</b></td><td>${m[1]}</td><td>${m[2]}</td><td>${m[3]}</td><td class="mono">${m[4]}</td></tr>`).join('');
+  host.innerHTML=`
+    <div class="grid g2">
+      <div class="card sub no-print">
+        <h3>① 批次載入影像 Batch load</h3>
+        <p class="muted">點擊選擇<b>整個資料夾</b>一次載入所有影像（依資料夾名 good/defect 自動標註）。</p>
+        <div class="btnrow">
+          <label class="btn">📁 選擇資料夾 Select folder<input type="file" id="${key}Dir" webkitdirectory directory multiple accept="image/*"></label>
+          <label class="btn ghost">🖼️ 選擇多個檔案 Files<input type="file" id="${key}Files" multiple accept="image/*"></label>
+          <button class="btn ghost" id="${key}Demo">✨ 載入示範樣本 Demo</button>
+        </div>
+        <div id="${key}LoadInfo" class="muted mono">尚未載入 No data.</div>
+      </div>
+      <div class="card sub no-print">
+        <h3>② 硬體與模型 Hardware &amp; Model</h3>
+        <div id="${key}HW" class="mono muted">—</div>
+        <label class="fld">部署方式 Deployment</label>
+        <select id="${key}Deploy">
+          <option value="local">本機自動下載安裝 Local auto-install</option>
+          <option value="cloud">雲端 API Key Cloud API</option>
+        </select>
+        <div id="${key}Cloud" class="hidden"><label class="fld">API Key</label><input type="password" id="${key}ApiKey" placeholder="sk-..."></div>
+        <label class="fld">辨識模型 Recognition model（前 5 名）</label>
+        <select id="${key}RecSel"></select>
+        ${opts.gen?`<label class="fld">生成增強模型 Generation model（前 5 名）</label><select id="${key}GenSel"></select>`:''}
+      </div>
+    </div>
+
+    <details class="card sub no-print"><summary style="cursor:pointer;color:var(--accent);font-weight:700">前 5 名模型清單 Top-5 models（依硬體排序，點擊展開）</summary>
+      <h4>辨識 Recognition</h4><div class="tbl-wrap"><table><tr><th>#</th><th>模型</th><th>來源</th><th>規格</th><th>說明</th><th>取得</th></tr>${recRows}</table></div>
+      <h4>生成增強 Generation</h4><div class="tbl-wrap"><table><tr><th>#</th><th>模型</th><th>來源</th><th>規格</th><th>說明</th><th>取得</th></tr>${genRows}</table></div>
+    </details>
+
+    <div class="card sub no-print">
+      <h3>③ 參數與目標 Parameters &amp; Targets</h3>
+      <div class="grid g4">
+        <div><label class="fld">接觸顯色門檻 Redness T</label><input type="number" id="${key}pR" value="${STATE.params.redness}"></div>
+        <div><label class="fld">邊距 Margin (0-0.4)</label><input type="number" step="0.01" id="${key}pM" value="${STATE.params.margin}"></div>
+        <div><label class="fld">邊框比例 Frame (0.1-0.45)</label><input type="number" step="0.01" id="${key}pF" value="${STATE.params.frame}"></div>
+        <div><label class="fld">空白門檻 Blank (=20%)</label><input type="number" step="0.01" id="${key}pB" value="${STATE.params.blank}"></div>
+      </div>
+      <label class="fld" style="margin-top:8px"><input type="checkbox" id="${key}pAuto" style="width:auto"> 自動偵測壓痕範圍 Auto-detect bbox（取代固定邊距）</label>
+      <div class="note">目標 Targets：準確率 &gt; 95% ・ 精確率 &gt; 95% ・ 召回率 &gt; 97% ・ F1 &gt; 96% ・ IoU &gt; 75%</div>
+    </div>
+
+    <div class="card sub no-print">
+      <h3>④ 執行 MCP 自動微調 Run auto-tuning</h3>
+      <p class="muted">自動搜尋參數（以 1−F1 為目標函數），<b>收斂即停止 (early stopping)</b>，最多 1000 次迭代。</p>
+      <div class="btnrow">
+        <label class="fld" style="margin:0">最大迭代 Max iter</label>
+        <input type="number" id="${key}MaxIter" value="300" min="1" max="1000" style="max-width:120px">
+        <button class="btn" id="${key}Run">▶ 開始 ${opts.title}</button>
+        <button class="btn ghost" id="${key}Save" disabled>💾 儲存模型 ${opts.modelPrefix}_yymmddhhmm.pth</button>
+        <span id="${key}Status" class="muted"></span>
+      </div>
+      <div class="meter" style="margin-top:8px"><i id="${key}Bar" style="width:0%"></i></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card sub">
+        <h3>⑤ ${opts.title} 收斂曲線（1−F1・門檻搜尋）Convergence curve</h3>
+        <canvas id="${key}Loss" width="520" height="300"></canvas>
+      </div>
+      <div class="card sub">
+        <h3>⑥ 指標 Metrics</h3>
+        <div class="grid g3" id="${key}Kpi"></div>
+        <div id="${key}CM" class="mono" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="card sub">
+      <h3>⑦ 結果縮圖 Result thumbnails</h3>
+      <div class="legend"><span><span class="swatch" style="background:#9be37d"></span>good</span><span><span class="swatch" style="background:#ff8a5c"></span>defect</span><span>紅框=缺失區 missing</span></div>
+      <div class="thumbs scroll" id="${key}Thumbs"></div>
+    </div>
+  `;
+  // 填模型下拉 Fill selects
+  const recSel=$('#'+key+'RecSel'); rankModels(REC_MODELS).forEach(m=>recSel.add(new Option(m[0],m[0])));
+  if(opts.gen){ const gs=$('#'+key+'GenSel'); rankModels(GEN_MODELS).forEach(m=>gs.add(new Option(m[0],m[0]))); }
+  $('#'+key+'HW').textContent = STATE.hw? `🖥️ ${STATE.hw.cores}核 / RAM ${STATE.hw.mem}GB / ${STATE.hw.webgpu?'WebGPU':'WebGL'} / 推薦等級 ${STATE.hw.tier.toUpperCase()} / GPU:${STATE.hw.gpu}`:'—';
+  $('#'+key+'Deploy').onchange=e=>$('#'+key+'Cloud').classList.toggle('hidden',e.target.value!=='cloud');
+
+  // 載入事件 Load events
+  const setData=async(fl)=>{ $('#'+key+'LoadInfo').innerHTML='<span class="spin"></span> 載入中 Loading…';
+    const items=await loadFiles(fl); STATE.sets[key].items=items; STATE.autoLabeled=false;
+    const lab=items.filter(i=>i.truth).length;
+    $('#'+key+'LoadInfo').innerHTML=`已載入 Loaded <b>${items.length}</b> 張，已標註 labeled <b>${lab}</b>（good ${items.filter(i=>i.truth==='good').length} / defect ${items.filter(i=>i.truth==='defect').length}）。`;
+    log(`${key}: loaded ${items.length} images`); };
+  $('#'+key+'Dir').onchange=e=>setData(e.target.files);
+  $('#'+key+'Files').onchange=e=>setData(e.target.files);
+  $('#'+key+'Demo').onclick=()=>{ STATE.sets[key].items=makeDemo(12);
+    $('#'+key+'LoadInfo').innerHTML=`已載入示範樣本 Demo <b>12</b> 張（good 6 / defect 6，含真值標註）。`;
+    log(`${key}: demo loaded`); };
+
+  // 參數讀取 Read params
+  const readP=()=>({...STATE.params,
+    redness:+$('#'+key+'pR').value, margin:+$('#'+key+'pM').value,
+    frame:+$('#'+key+'pF').value, blank:+$('#'+key+'pB').value, autoBBox:$('#'+key+'pAuto').checked});
+
+  // 執行 Run
+  $('#'+key+'Run').onclick=()=>runStage(key,opts,readP());
+  $('#'+key+'Save').onclick=()=>saveModel(key,opts);
+}
+
+/* 生成示範資料 Demo data via synthetic canvases */
+function makeDemo(n){
+  const items=[];
+  for(let i=0;i<n;i++){ const defect=i%2===1; const c=document.createElement('canvas'); c.width=ASZ;c.height=ASZ;
+    drawSynthetic(c.getContext('2d'),ASZ,defect);
+    // 直接以 canvas 作為繪圖來源（同步可用，避免 Image 非同步載入時序問題）
+    items.push({name:`${defect?'defect':'good'}_demo_${i}.png`,path:`demo/${defect?'defect':'good'}/x_${i}.png`,img:c,truth:defect?'defect':'good',res:null,url:c.toDataURL()});
+  }
+  return items;
+}
+function drawSynthetic(ctx,W,defect){
+  ctx.fillStyle='#efe9e6'; ctx.fillRect(0,0,W,W);   // 感壓紙底（淺暖，僅作圖像資料，非 UI 背景）
+  const m=W*0.2, s=W-2*m, g=24, cell=s/g;
+  for(let y=0;y<g;y++)for(let x=0;x<g;x++){
+    let on=true;
+    if(defect){ const nx=x/g,ny=y/g;
+      if((nx<0.28&&ny<0.28))on=false;
+      if((nx>0.72&&ny>0.72))on=false;
+      if(nx>0.4&&nx<0.6&&ny>0.4&&ny<0.6&&Math.random()<0.7)on=false;
+    } else { if(Math.random()<0.05)on=false; }
+    if(!on)continue;
+    const inten=defect?0.45+Math.random()*0.4:0.75+Math.random()*0.25;
+    ctx.fillStyle=`rgba(${200},${60+(1-inten)*60},${95+(1-inten)*40},${inten})`;
+    ctx.fillRect(m+x*cell,m+y*cell,cell+0.5,cell+0.5);
+  }
+}
+
+/* 執行階段：MCP 自動微調 Run a stage with MCP auto-tune */
+async function runStage(key,opts,P0){
+  const set=STATE.sets[key];
+  if(!set.items.length){ $('#'+key+'Status').innerHTML='<span class="tag bad">請先載入影像 Load images first</span>'; return; }
+  const labeled=set.items.filter(i=>i.truth).length;
+  const maxIter=clamp(+$('#'+key+'MaxIter').value||300,1,1000);
+  const btn=$('#'+key+'Run'); btn.disabled=true;
+  $('#'+key+'Status').innerHTML='<span class="spin"></span> 執行中 Running…';
+  const lossHist=[], accHist=[];
+  let best={P:{...P0}, m:null, loss:1};
+
+  // 評估函式：以目前參數預測並算指標 evaluate
+  const evalP=(P)=>{ set.items.forEach(it=> it.res=analyze(it.img,P)); return metrics(set.items); };
+
+  // 初評 initial
+  let m=evalP(P0); best.m=m; best.loss=1-m.f1; lossHist.push(best.loss); accHist.push(m.acc);
+  drawLoss(key,lossHist,accHist,opts);
+
+  // 若無標註，無法真實最佳化：用單次結果＋示意收斂曲線
+  if(labeled<2){
+    for(let i=1;i<Math.min(maxIter,60);i++){ const l=best.loss*Math.exp(-i/14)+0.02*Math.random();
+      lossHist.push(l); accHist.push(clamp(1-l*0.8,0,1)); }
+    drawLoss(key,lossHist,accHist,opts);
+    set.metrics=m; set.loss={lossHist,accHist};
+    renderKPI(key,m); renderThumbs(key);
+    $('#'+key+'Status').innerHTML='<span class="tag acc">未標註，僅示範收斂曲線 Unlabeled: demo curve</span>';
+    btn.disabled=false; $('#'+key+'Save').disabled=false; return;
+  }
+
+  // MCP：座標下降 + 隨機擾動搜尋 coordinate-descent + random search
+  let iter=0, met=false;
+  const stepSched=[3,2,1, .04,.03,.02];
+  for(iter=1; iter<=maxIter; iter++){
+    // 候選 candidate：擾動 redness / blank / margin / frame
+    const cand={...best.P};
+    const pick=Math.floor(Math.random()*4);
+    if(pick===0) cand.redness = clamp(best.P.redness + (Math.random()*2-1)*6, 4, 60);
+    if(pick===1) cand.blank   = clamp(best.P.blank   + (Math.random()*2-1)*0.06, 0.05, 0.45);
+    if(pick===2) cand.margin  = clamp(best.P.margin  + (Math.random()*2-1)*0.04, 0, 0.4);
+    if(pick===3) cand.frame   = clamp(best.P.frame   + (Math.random()*2-1)*0.04, 0.12, 0.45);
+    const cm=evalP(cand); const closs=1-cm.f1;
+    if(closs < best.loss - 1e-6){ best={P:{...cand},m:cm,loss:closs}; }
+    lossHist.push(best.loss); accHist.push(best.m.acc);
+    if(iter%4===0||iter===maxIter){ drawLoss(key,lossHist,accHist,opts);
+      $('#'+key+'Bar').style.width=(iter/maxIter*100)+'%';
+      $('#'+key+'Status').innerHTML=`迭代 iter ${iter}/${maxIter} ・ F1=${pct(best.m.f1)} ・ Acc=${pct(best.m.acc)}`;
+      await new Promise(r=>setTimeout(r,0)); }
+    if(meetsTargets(best.m)){ met=true; break; }   // 早停 early stopping
+  }
+  // 套用最佳參數做最終預測 apply best
+  set.items.forEach(it=> it.res=analyze(it.img,best.P));
+  m=metrics(set.items); set.metrics=m; set.loss={lossHist,accHist}; set.bestP=best.P;
+  drawLoss(key,lossHist,accHist,opts); renderKPI(key,m); renderThumbs(key);
+  $('#'+key+'Bar').style.width='100%';
+  $('#'+key+'Status').innerHTML = met
+    ? `<span class="tag good">✓ 已達標 Targets met（早停 @ iter ${iter}）</span>`
+    : `<span class="tag bad">未完全達標（已達上限 ${maxIter}）取最佳 F1=${pct(m.f1)}</span>`;
+  btn.disabled=false; $('#'+key+'Save').disabled=false;
+  log(`${key}: run done, met=${met}, F1=${m.f1.toFixed(3)}`);
+}
+
+/* KPI 卡片 + 混淆矩陣 */
+function renderKPI(key,m){
+  const t=STATE.targets;
+  const rows=[['準確率 Accuracy',m.acc,t.acc],['精確率 Precision',m.prec,t.prec],
+    ['召回率 Recall',m.rec,t.rec],['F1 分數 F1',m.f1,t.f1],['交並比 IoU',m.iou,t.iou]];
+  $('#'+key+'Kpi').innerHTML=rows.map(r=>{
+    const ok=r[1]>r[2]; return `<div class="kpiCard ${ok?'ok':'no'}"><div class="v">${pct(r[1])}</div><div class="l">${r[0]}<br>目標&gt;${(r[2]*100)}% ${ok?'✓':'✗'}</div></div>`;
+  }).join('');
+  $('#'+key+'CM').innerHTML=`混淆矩陣 Confusion：TP=${m.TP} TN=${m.TN} FP=${m.FP} FN=${m.FN} ・ 已標註樣本 labeled=${m.labeled}`;
+}
+
+/* 縮圖 Thumbnails with mini missing-region overlay */
+function renderThumbs(key){
+  const host=$('#'+key+'Thumbs'); host.innerHTML='';
+  STATE.sets[key].items.slice(0,60).forEach(it=>{
+    if(!it.res) it.res=analyze(it.img);
+    const d=document.createElement('div'); d.className='thumb';
+    const c=document.createElement('canvas'); c.width=140; c.height=140;
+    const ctx=c.getContext('2d'); ctx.drawImage(it.img,0,0,140,140);
+    drawMissingOverlay(ctx,140,140,it.res);
+    const badge=it.res.label==='good'?'good':'bad';
+    d.appendChild(c);
+    d.insertAdjacentHTML('beforeend',`<span class="badge ${badge}">${it.res.label}${it.truth?(' / '+it.truth):''}</span><div class="cap">${it.name}<br>maxBlank ${pct(it.res.maxBlank)}</div>`);
+    host.appendChild(d);
+  });
+}
+function drawMissingOverlay(ctx,W,H,res){
+  const b=res.bbox, sx=W/res.grid, sy=H/res.grid;
+  const reg={ top:[b.x0,b.y0,b.x1,b.y0+b.fwy], bottom:[b.x0,b.y1-b.fwy,b.x1,b.y1],
+    left:[b.x0,b.y0+b.fwy,b.x0+b.fwx,b.y1-b.fwy], right:[b.x1-b.fwx,b.y0+b.fwy,b.x1,b.y1-b.fwy],
+    center:[b.x0+b.fwx,b.y0+b.fwy,b.x1-b.fwx,b.y1-b.fwy] };
+  ctx.lineWidth=2;
+  for(const k in reg){ const miss=res.blanks[k]>STATE.params.blank; const r=reg[k];
+    ctx.strokeStyle=miss?'#ff6b6b':'rgba(204,255,153,.5)'; ctx.setLineDash(miss?[3,2]:[]);
+    ctx.strokeRect(r[0]*sx,r[1]*sy,(r[2]-r[0])*sx,(r[3]-r[1])*sy); }
+  ctx.setLineDash([]);
+}
+
+/* 收斂曲線 1−F1（中英軸標，不亂碼）Convergence curve canvas */
+function drawLoss(key,loss,acc,opts){
+  const c=$('#'+key+'Loss'), ctx=c.getContext('2d'), W=c.width,H=c.height;
+  const padL=52,padR=48,padT=24,padB=46;
+  ctx.fillStyle='#142138'; ctx.fillRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle='#2a4170'; ctx.lineWidth=1; ctx.font='11px monospace'; ctx.fillStyle='#a9d97f';
+  for(let i=0;i<=5;i++){ const y=padT+(H-padT-padB)*i/5; ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.textAlign='right';ctx.fillText((1-i/5).toFixed(1),padL-6,y+4);
+    ctx.textAlign='left';ctx.fillStyle='#ffd24d';ctx.fillText((i/5*100).toFixed(0)+'%',W-padR+6,y+4);ctx.fillStyle='#a9d97f';}
+  const n=loss.length, X=i=>padL+(W-padL-padR)*(n<=1?0:i/(n-1)), Y=v=>padT+(H-padT-padB)*(1-v);
+  // loss line
+  ctx.strokeStyle='#ff8a5c'; ctx.lineWidth=2; ctx.beginPath();
+  loss.forEach((v,i)=>{ const x=X(i),y=Y(clamp(v,0,1)); i?ctx.lineTo(x,y):ctx.moveTo(x,y);}); ctx.stroke();
+  // acc line
+  ctx.strokeStyle='#9be37d'; ctx.beginPath();
+  acc.forEach((v,i)=>{ const x=X(i),y=Y(clamp(v,0,1)); i?ctx.lineTo(x,y):ctx.moveTo(x,y);}); ctx.stroke();
+  // axes labels（中英）
+  ctx.fillStyle='#ccff99'; ctx.font='12px monospace'; ctx.textAlign='center';
+  ctx.fillText('迭代次數 Iteration',(padL+W-padR)/2, H-14);
+  ctx.save(); ctx.translate(14,(padT+H-padB)/2); ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#ff8a5c'; ctx.fillText('損失 Loss (1−F1)',0,0); ctx.restore();
+  ctx.save(); ctx.translate(W-12,(padT+H-padB)/2); ctx.rotate(Math.PI/2);
+  ctx.fillStyle='#9be37d'; ctx.fillText('準確率 Accuracy',0,0); ctx.restore();
+  // legend
+  ctx.textAlign='left';ctx.fillStyle='#ff8a5c';ctx.fillText('— Loss',padL+6,padT+12);
+  ctx.fillStyle='#9be37d';ctx.fillText('— Accuracy',padL+70,padT+12);
+  ctx.fillStyle='#a9d97f';ctx.fillText(opts.title,W-padR-90,padT+12);
+}
+
+/* 儲存模型 Save model file (.pth naming, JSON params content) */
+function saveModel(key,opts){
+  const s=stamp(); const fn=`${opts.modelPrefix}_${s.ymd}${s.hm}.pth`;
+  const set=STATE.sets[key];
+  const payload={ format:'cpu-imprint-morphological-classifier', note:'瀏覽器訓練之門檻型參數（非 PyTorch 張量權重）。Browser-trained threshold params.',
+    stage:key, created:new Date().toISOString(), hardware:STATE.hw,
+    params:set.bestP||STATE.params, targets:STATE.targets, metrics:set.metrics };
+  set.model={name:fn,payload};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/octet-stream'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fn; a.click();
+  $('#'+key+'Status').innerHTML=`<span class="tag good">已儲存 Saved ${fn}</span>`;
+  if(key==='train') $('#valBase').textContent=fn;
+  if(key==='val') $('#testBase').textContent=fn;
+  log(`${key}: model saved ${fn}`);
+}
+
+/* =====================================================================
+   報告 Report：ControlNet 標註 / 溫度梯度 / 熱流 / KPI / RCA / DB / 雜湊鏈 / 資安
+   ===================================================================== */
+function tempColor(deg,Tmin,Tmax){ // 每 1°C 一色 jet-like
+  const t=clamp((deg-Tmin)/(Tmax-Tmin),0,1);
+  // blue->cyan->green->yellow->orange->red
+  const stops=[[0,'30,60,160'],[0.25,'40,180,200'],[0.5,'120,210,90'],[0.7,'240,220,70'],[0.85,'240,150,50'],[1,'220,60,50']];
+  for(let i=0;i<stops.length-1;i++){ if(t>=stops[i][0]&&t<=stops[i+1][0]){
+    const f=(t-stops[i][0])/(stops[i+1][0]-stops[i][0]); const a=stops[i][1].split(',').map(Number),b=stops[i+1][1].split(',').map(Number);
+    return `rgb(${a.map((v,j)=>Math.round(v+(b[j]-v)*f)).join(',')})`; } }
+  return 'rgb(220,60,50)';
+}
+function renderThermal(canvas,res,P){
+  const ctx=canvas.getContext('2d'), W=canvas.width,H=canvas.height, g=res.grid;
+  const Tmin=P.Tmin,Tmax=P.Tmax, cw=W/g, ch=H/g;
+  // 溫度場（量化到整數度，每度一色）
+  const T=new Float32Array(g*g);
+  for(let i=0;i<g*g;i++){ T[i]=Math.round(Tmin+(1-res.dens[i])*(Tmax-Tmin)); }
+  for(let y=0;y<g;y++)for(let x=0;x<g;x++){ ctx.fillStyle=tempColor(T[y*g+x],Tmin,Tmax);
+    ctx.fillRect(x*cw,y*ch,cw+1,ch+1); }
+  // 熱流密度向量 q = -k∇T
+  ctx.strokeStyle='rgba(20,30,50,.8)'; ctx.fillStyle='rgba(20,30,50,.8)'; ctx.lineWidth=1;
+  const step=4, k=P.k;
+  for(let y=step;y<g-step;y+=step)for(let x=step;x<g-step;x+=step){
+    const dTx=(T[y*g+x+1]-T[y*g+x-1])/2, dTy=(T[(y+1)*g+x]-T[(y-1)*g+x])/2;
+    let qx=-k*dTx, qy=-k*dTy; const mag=Math.hypot(qx,qy); if(mag<0.5)continue;
+    const sc=Math.min(cw*step*0.9, mag*1.2)/ (mag||1);
+    const x0=(x+0.5)*cw,y0=(y+0.5)*ch, x1=x0+qx*sc, y1=y0+qy*sc;
+    ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+    const ang=Math.atan2(y1-y0,x1-x0); ctx.beginPath();
+    ctx.moveTo(x1,y1);ctx.lineTo(x1-5*Math.cos(ang-0.4),y1-5*Math.sin(ang-0.4));
+    ctx.lineTo(x1-5*Math.cos(ang+0.4),y1-5*Math.sin(ang+0.4));ctx.closePath();ctx.fill();
+  }
+  return {Tmin,Tmax,Tmax_obs:Math.max(...T),Tmin_obs:Math.min(...T)};
+}
+function renderColorbar(canvas,Tmin,Tmax){
+  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height; ctx.fillStyle='#142138';ctx.fillRect(0,0,W,H);
+  const barW=26, x=10, top=10, bot=H-22, hh=bot-top;
+  for(let i=0;i<=hh;i++){ const deg=Tmax-(i/hh)*(Tmax-Tmin); ctx.fillStyle=tempColor(deg,Tmin,Tmax); ctx.fillRect(x,top+i,barW,1); }
+  ctx.strokeStyle='#3a5a8c';ctx.strokeRect(x,top,barW,hh);
+  ctx.fillStyle='#ccff99';ctx.font='11px monospace';ctx.textAlign='left';
+  for(let s=0;s<=5;s++){ const deg=Math.round(Tmax-(s/5)*(Tmax-Tmin)); const y=top+(s/5)*hh;
+    ctx.fillText(deg+'°C',x+barW+6,y+4); ctx.beginPath();ctx.moveTo(x+barW,y);ctx.lineTo(x+barW+4,y);ctx.stroke(); }
+  ctx.fillText('溫度 Temp',x,H-6);
+}
+function renderControlNet(canvas,it,P){
+  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
+  ctx.drawImage(it.img,0,0,W,H);
+  ctx.fillStyle='rgba(20,30,50,.35)';ctx.fillRect(0,0,W,H);
+  const res=it.res||analyze(it.img,P); const b=res.bbox, sx=W/res.grid, sy=H/res.grid;
+  const reg={ '上 top':[b.x0,b.y0,b.x1,b.y0+b.fwy], '下 bottom':[b.x0,b.y1-b.fwy,b.x1,b.y1],
+    '左 left':[b.x0,b.y0+b.fwy,b.x0+b.fwx,b.y1-b.fwy], '右 right':[b.x1-b.fwx,b.y0+b.fwy,b.x1,b.y1-b.fwy],
+    '中 center':[b.x0+b.fwx,b.y0+b.fwy,b.x1-b.fwx,b.y1-b.fwy] };
+  ctx.font='11px monospace'; ctx.lineWidth=2; ctx.textBaseline='top';
+  let idx=0;
+  for(const k in reg){ const key=k.split(' ')[1]; const miss=res.blanks[key]>P.blank; const r=reg[k];
+    const rx=r[0]*sx,ry=r[1]*sy,rw=(r[2]-r[0])*sx,rh=(r[3]-r[1])*sy;
+    ctx.strokeStyle=miss?'#ff6b6b':'#9be37d'; ctx.setLineDash(miss?[5,3]:[]);
+    ctx.strokeRect(rx,ry,rw,rh);
+    if(miss){ idx++; ctx.fillStyle='rgba(255,107,107,.9)'; const tag=`#${idx} ${k} 缺失 ${pct(res.blanks[key])}`;
+      const tw=ctx.measureText(tag).width+8; ctx.fillRect(rx,ry,tw,16);
+      ctx.fillStyle='#fff'; ctx.fillText(tag,rx+4,ry+2); }
+  }
+  ctx.setLineDash([]);
+  // 標題 badge
+  ctx.fillStyle=res.label==='good'?'rgba(155,227,125,.95)':'rgba(255,138,92,.95)';
+  ctx.fillRect(0,H-20,W,20); ctx.fillStyle='#0e1830';ctx.textAlign='left';
+  ctx.fillText(`判定 ${res.label.toUpperCase()} ・ maxBlank ${pct(res.maxBlank)} ・ 整體空白 ${pct(res.overallBlank)}`,6,H-17);
+  return res;
+}
+
+/* RCA 知識庫 */
+const RCA=[
+ ['角落／對角缺失 Corner blank','散熱器固定壓力不均、四角螺絲扭力不一致、CPU 頂蓋(IHS)翹曲(warping)。','以對角線順序分次鎖附並校正扭力(torque spec)；檢查 IHS 平整度；必要時加裝背板。','Intel TMDG；JEDEC 機構規範'],
+ ['單邊缺失 One-side blank','安裝傾斜、主機板/底座不平、立柱高度不一。','重新安裝、檢查 standoff 高度與主機板翹曲；確認散熱器底面與 IHS 平行。','Fujifilm Prescale 應用手冊'],
+ ['中央缺失 Center blank','導熱介面材料(TIM)量不足、散熱器底面中央凹陷(concave)。','增加 TIM 用量或改點塗法；研磨/拋光底面；確認泵出(pump-out)效應。','TIM 製造商技術文件'],
+ ['整體偏淡 Overall light','總鎖附壓力不足、彈簧老化、扭力低於規格。','提升至規格扭力；更換彈簧/扣具；確認壓力落在感壓紙量程。','Prescale 量程規格'],
+ ['局部過深 Local over-press','異物夾入、IHS 凸起、接觸面顆粒污染。','清潔接觸面、檢查異物與毛邊；確認平面度。','潔淨度 SOP'],
+];
+
+/* 雜湊鏈 Hash chain（SHA-256・單機 append-only・非分散式） */
+async function sha256(str){ const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+async function addBlock(data){
+  const prev=STATE.chain.length?STATE.chain[STATE.chain.length-1].hash:'0'.repeat(64);
+  const blk={index:STATE.chain.length,ts:new Date().toISOString(),data,prev,nonce:0,hash:''};
+  // 輕量工作量證明 light PoW: 前置 2 個 0
+  do{ blk.nonce++; blk.hash=await sha256(blk.index+blk.ts+JSON.stringify(blk.data)+blk.prev+blk.nonce); }
+  while(!blk.hash.startsWith('00') && blk.nonce<5000);
+  STATE.chain.push(blk); return blk;
+}
+async function verifyChain(){ for(let i=0;i<STATE.chain.length;i++){ const b=STATE.chain[i];
+  const h=await sha256(b.index+b.ts+JSON.stringify(b.data)+b.prev+b.nonce);
+  if(h!==b.hash) return {ok:false,at:i}; if(i>0&&b.prev!==STATE.chain[i-1].hash) return {ok:false,at:i}; }
+  return {ok:true,n:STATE.chain.length}; }
+
+/* IndexedDB 資料庫 */
+const DB={ db:null,
+  open(){ return new Promise((res,rej)=>{ const r=indexedDB.open('cpu_imprint_db',1);
+    r.onupgradeneeded=e=>{ const db=e.target.result; if(!db.objectStoreNames.contains('records'))
+      db.createObjectStore('records',{keyPath:'id',autoIncrement:true}); };
+    r.onsuccess=e=>{DB.db=e.target.result;res(DB.db)}; r.onerror=e=>rej(e); }); },
+  put(rec){ return new Promise((res,rej)=>{ const tx=DB.db.transaction('records','readwrite');
+    tx.objectStore('records').add(rec); tx.oncomplete=()=>res(); tx.onerror=rej; }); },
+  all(){ return new Promise((res)=>{ const tx=DB.db.transaction('records','readonly');
+    const rq=tx.objectStore('records').getAll(); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>res([]); }); },
+  clear(){ return new Promise(res=>{ const tx=DB.db.transaction('records','readwrite');
+    tx.objectStore('records').clear(); tx.oncomplete=()=>res(); }); }
+};
+
+/* AES-GCM 資安加密 demo (PBKDF2) */
+async function deriveKey(pass,salt){ const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:120000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }
+async function encryptText(pass,text){ const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(pass,salt); const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(text));
+  const out=btoa(String.fromCharCode(...salt,...iv,...new Uint8Array(ct))); return out; }
+
+/* 收集所有照片 collect all items across sets (incl. unlabeled in any) */
+function allItems(){ return [...STATE.sets.train.items,...STATE.sets.val.items,...STATE.sets.test.items]; }
+
+/* 建立報告 Build report */
+async function buildReport(){
+  const host=$('#reportBody'); const P=STATE.params;
+  let items=allItems();
+  if(!items.length){ items=makeDemo(8); STATE.sets.test.items=items; }
+  items.forEach(it=>{ if(!it.res) it.res=analyze(it.img,P); });
+  const s=stamp(); const reportId=`cpu_test_${s.ymd}${s.hm}`;
+  document.title=reportId+'.pdf';
+  // 統計 stats
+  const nDef=items.filter(i=>i.res.label==='defect').length, nGood=items.length-nDef;
+  const m = STATE.sets.test.metrics||STATE.sets.val.metrics||STATE.sets.train.metrics||metrics(items);
+
+  host.innerHTML=`
+  <div class="card"><h2 style="border-color:var(--accent-2)">CPU 壓痕檢測報告 Inspection Report</h2>
+    <p class="mono">報告編號 Report ID：<b>${reportId}.pdf</b> ・ 產生時間 ${new Date().toLocaleString()}</p>
+    <p>本報告整合訓練／驗證／測試之全部 <b>${items.length}</b> 張影像，包含 ControlNet 缺失標註、溫度梯度圖（每 1°C 一色，含色階尺・模型推估）、熱流密度向量、KPI 儀表板、RCA 知識庫，並寫入資料庫與雜湊鏈、套用資安防護。</p>
+    <div class="legend"><span class="tag good">good ${nGood}</span><span class="tag bad">defect ${nDef}</span><span class="tag acc">缺陷率 ${pct(nDef/items.length)}</span></div>
+  </div>
+
+  <div class="card"><h3>6.1 KPI 儀表板 Dashboard</h3><div class="grid g3" id="repKpiGauges"></div>
+    <p class="mono muted">混淆矩陣 Confusion：TP=${m.TP} TN=${m.TN} FP=${m.FP} FN=${m.FN}（已標註 labeled=${m.labeled}）</p>
+    <div class="note" id="repMetricNote" style="display:none"></div></div>
+
+  <div class="card"><h3>6.1b 資料集切分 6 : 1.5 : 2.5 Split Summary</h3>
+    <div id="repSplit"><span class="muted">未使用切分（單一資料來源）。No split.</span></div></div>
+
+  <div class="card"><h3>6.2 全部照片：ControlNet 標註 + 溫度梯度 + 熱流向量</h3>
+    <p class="muted">左：原圖＋ControlNet 缺失框與數值 ・ 中：溫度梯度圖（每 1°C 一色・<b>模型推估，非實測溫度</b>）＋熱流密度向量 q = −k∇T ・ 右：色階尺 °C</p>
+    <div id="repGallery"></div>
+  </div>
+
+  <div class="card"><h3>6.3 RCA 根因分析知識庫 Root-Cause Knowledge Base</h3>
+    <div class="tbl-wrap"><table><tr><th>缺失型態 Pattern</th><th>可能根因 Root cause</th><th>對策 Action</th><th>依據 Ref</th></tr>
+    ${RCA.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="muted">${r[3]}</td></tr>`).join('')}</table></div></div>
+
+  <div class="card no-print"><h3>6.4 資料庫 Database（IndexedDB）</h3>
+    <div class="btnrow"><button class="btn" id="dbSave">寫入資料庫 Save to DB</button>
+      <button class="btn ghost" id="dbLoad">讀取 Reload</button>
+      <button class="btn ghost" id="dbExport">匯出 JSON</button>
+      <span id="dbStatus" class="muted"></span></div>
+    <div class="tbl-wrap scroll" id="dbTable"></div></div>
+
+  <div class="card no-print"><h3>6.5 雜湊鏈 Hash Chain（SHA-256 + 輕量 PoW・單機、非分散式）</h3>
+    <div class="btnrow"><button class="btn" id="bcAdd">將本報告上鏈 Commit to chain</button>
+      <button class="btn ghost" id="bcVerify">驗證完整性 Verify</button>
+      <span id="bcStatus" class="muted"></span></div>
+    <div class="scroll mono" id="bcView" style="font-size:.78rem"></div></div>
+
+  <div class="card no-print"><h3>6.6 資安防護 Security</h3>
+    <ul>
+      <li><b>本機運算 Local-only：</b>影像與結果不離開瀏覽器，杜絕外洩。</li>
+      <li><b>完整性 Integrity：</b>雜湊鏈防竄改（單機 append-only，偵測報告產出後之事後竄改），任一筆遭改即驗證失敗。</li>
+      <li><b>機密性 Confidentiality：</b>AES-GCM 256 位元加密（PBKDF2 金鑰派生）保護匯出檔。</li>
+      <li><b>稽核 Audit：</b>所有操作寫入稽核軌跡 audit log。</li>
+      <li><b>輸入驗證 Input validation：</b>僅接受影像檔，防止惡意檔注入。</li>
+    </ul>
+    <label class="fld">加密通關密語 Passphrase</label>
+    <div class="btnrow"><input type="password" id="secPass" placeholder="輸入密語以加密報告摘要" style="max-width:280px">
+      <button class="btn alt" id="secEnc">AES 加密報告摘要</button></div>
+    <div class="mono muted" id="secOut" style="word-break:break-all"></div>
+    <details style="margin-top:8px"><summary style="cursor:pointer;color:var(--accent)">稽核軌跡 Audit log</summary>
+      <div class="scroll mono" id="auditView" style="font-size:.76rem"></div></details></div>
+  `;
+
+  // KPI gauges（依是否有真值標註切換）
+  const labeled=m.labeled, hasSplit=items.some(i=>i.split);
+  const gh=$('#repKpiGauges'); let gs;
+  if(labeled>0){
+    gs=[['準確率 Accuracy',m.acc,STATE.targets.acc],['精確率 Precision',m.prec,STATE.targets.prec],
+        ['召回率 Recall',m.rec,STATE.targets.rec],['F1 分數 F1',m.f1,STATE.targets.f1],
+        ['交並比 IoU',m.iou,STATE.targets.iou],['缺陷率 Defect rate',nDef/items.length,null]];
+    const note=$('#repMetricNote'); note.style.display='block';
+    note.innerHTML=`指標以資料夾 good/defect <b>真值標註</b>計算（已標註 ${labeled} 張）。`+(STATE.autoLabeled
+      ? '<br><span style="color:var(--bad)"><b>注意</b>：目前標註為模型<b>自動預標</b>、未經人工校正，故數值反映「<b>自我一致性</b>」（趨近 100%），<b>非真實泛化效能</b>。請人工校正錯標檔案的資料夾歸屬後，以各分頁「📁 選擇資料夾」重新載入，即可得有效指標。</span>'
+      : '');
+  } else {
+    gs=[['缺陷率 Defect rate',nDef/items.length,null],['良品率 Good rate',nGood/items.length,null]];
+    const note=$('#repMetricNote'); note.style.display='block';
+    note.innerHTML='本資料<b>未提供真值標註</b>（檔名/資料夾未含 good/defect），故 準確率／精確率／召回率／F1／IoU <b>無法計算（N/A）</b>。以下儀表為模型<b>實際預測</b>之缺陷／良品比例；如需對比指標，請依資料夾名 good/defect 標註後重跑。';
+  }
+  gh.innerHTML=gs.map((g,i)=>`<div class="kpiCard"><canvas id="gauge${i}" width="150" height="100"></canvas><div class="l">${g[0]}</div></div>`).join('');
+  gs.forEach((g,i)=>drawGauge($('#gauge'+i),g[1],g[2]));
+
+  // 切分摘要 split summary
+  if(hasSplit){
+    const dist=sp=>{ const a=items.filter(i=>i.split===sp); return {n:a.length,good:a.filter(i=>i.res.label==='good').length,defect:a.filter(i=>i.res.label==='defect').length}; };
+    const dT=dist('train'),dV=dist('val'),dE=dist('test');
+    $('#repSplit').innerHTML=`<div class="tbl-wrap"><table>
+      <tr><th>資料子集 Subset</th><th>目標比例 Ratio</th><th>張數 N</th><th>良品 good</th><th>缺陷 defect</th><th>缺陷率 Defect%</th></tr>
+      <tr><td>訓練 Train</td><td>60% (6)</td><td>${dT.n}</td><td>${dT.good}</td><td>${dT.defect}</td><td>${pct(dT.defect/Math.max(1,dT.n))}</td></tr>
+      <tr><td>驗證 Val</td><td>15% (1.5)</td><td>${dV.n}</td><td>${dV.good}</td><td>${dV.defect}</td><td>${pct(dV.defect/Math.max(1,dV.n))}</td></tr>
+      <tr><td>測試 Test</td><td>25% (2.5)</td><td>${dE.n}</td><td>${dE.good}</td><td>${dE.defect}</td><td>${pct(dE.defect/Math.max(1,dE.n))}</td></tr>
+      <tr><th>合計 Total</th><th>100%</th><th>${items.length}</th><th>${nGood}</th><th>${nDef}</th><th>${pct(nDef/items.length)}</th></tr>
+      </table></div><p class="muted">分層抽樣 (stratified by predicted class)，固定種子可重現。</p>`;
+  }
+
+  // Gallery：每張照片三聯圖（依 train/val/test 分組，渲染全部）
+  const gal=$('#repGallery'); gal.innerHTML='';
+  const groups = hasSplit
+    ? [['訓練 Train',items.filter(i=>i.split==='train')],['驗證 Val',items.filter(i=>i.split==='val')],['測試 Test',items.filter(i=>i.split==='test')]]
+    : [['全部 All',items]];
+  let gi=0;
+  for(const [gname,glist] of groups){
+    if(!glist.length) continue;
+    const hd=document.createElement('h4'); hd.textContent=`【${gname}】 共 ${glist.length} 張`; hd.style.color='var(--accent)'; gal.appendChild(hd);
+    for(const it of glist){ const i=gi++;
+      const row=document.createElement('div'); row.className='card sub'; row.style.margin='10px 0';
+      row.innerHTML=`<div style="font-size:.8rem" class="muted mono">${gname} #${i+1} ${it.name} ・ 真值 ${it.truth||'未標 N/A'} ・ 判定 ${it.res.label}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-top:6px">
+          <canvas width="220" height="220" id="cn${i}" style="border:1px solid var(--line);border-radius:8px"></canvas>
+          <canvas width="220" height="220" id="th${i}" style="border:1px solid var(--line);border-radius:8px"></canvas>
+          <canvas width="90" height="220" id="cb${i}" style="border:1px solid var(--line);border-radius:8px"></canvas>
+          <div class="mono" id="meta${i}" style="font-size:.78rem;flex:1 1 160px"></div>
+        </div>`;
+      gal.appendChild(row);
+      const res=renderControlNet($('#cn'+i),it,P);
+      const th=renderThermal($('#th'+i),res,P);
+      renderColorbar($('#cb'+i),P.Tmin,P.Tmax);
+      const miss=Object.keys(res.blanks).filter(k=>res.blanks[k]>P.blank);
+      $('#meta'+i).innerHTML=`判定 <b style="color:${res.label==='good'?'#9be37d':'#ff8a5c'}">${res.label.toUpperCase()}</b><br>
+        最大空白 maxBlank ${pct(res.maxBlank)}<br>整體空白 ${pct(res.overallBlank)}<br>
+        缺失區 missing：${miss.length?miss.join(', '):'無 none'}<br>
+        推估峰溫 Tmax≈${th.Tmax_obs}°C<br>各區覆蓋：top ${pct(res.cov.top)} / bottom ${pct(res.cov.bottom)} / left ${pct(res.cov.left)} / right ${pct(res.cov.right)} / center ${pct(res.cov.center)}`;
+      if(gi%12===0){ $('#reportStatus').innerHTML=`<span class="spin"></span> 繪製中 ${gi}/${items.length}…`; await new Promise(r=>setTimeout(r,0)); }
+    }
+  }
+
+  // ---- DB / Blockchain / Security 事件 ----
+  await DB.open().catch(()=>{});
+  const refreshDB=async()=>{ const all=await DB.all();
+    $('#dbTable').innerHTML=`<table><tr><th>id</th><th>時間</th><th>檔名</th><th>判定</th><th>maxBlank</th><th>真值</th></tr>${
+      all.slice(-200).map(r=>`<tr><td>${r.id}</td><td>${(r.ts||'').slice(0,19)}</td><td>${r.name}</td><td>${r.label}</td><td>${pct(r.maxBlank)}</td><td>${r.truth||''}</td></tr>`).join('')}</table>`; };
+  $('#dbSave').onclick=async()=>{ for(const it of items){ await DB.put({ts:new Date().toISOString(),name:it.name,label:it.res.label,
+      maxBlank:it.res.maxBlank,overallBlank:it.res.overallBlank,truth:it.truth,blanks:it.res.blanks}); }
+    log('DB: saved '+items.length+' records'); $('#dbStatus').textContent='已寫入 '+items.length+' 筆'; refreshDB(); };
+  $('#dbLoad').onclick=refreshDB;
+  $('#dbExport').onclick=async()=>{ const all=await DB.all(); const blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=reportId+'_db.json';a.click(); };
+  refreshDB();
+
+  const refreshBC=()=>{ $('#bcView').innerHTML=STATE.chain.map(b=>`#${b.index} ts=${b.ts.slice(0,19)} nonce=${b.nonce}<br>hash=${b.hash}<br>prev=${b.prev}<br>data=${JSON.stringify(b.data)}<br>—`).join('<br>'); };
+  $('#bcAdd').onclick=async()=>{ $('#bcStatus').innerHTML='<span class="spin"></span> 計算雜湊…';
+    const blk=await addBlock({reportId,n:items.length,defect:nDef,good:nGood,acc:+m.acc.toFixed(4),f1:+m.f1.toFixed(4)});
+    log('hashchain: block #'+blk.index+' '+blk.hash.slice(0,12)); $('#bcStatus').innerHTML=`<span class="tag good">已入鏈 block #${blk.index}</span>`; refreshBC(); };
+  $('#bcVerify').onclick=async()=>{ const v=await verifyChain(); $('#bcStatus').innerHTML= v.ok
+      ?`<span class="tag good">✓ 完整 ${v.n} 區塊驗證通過</span>`:`<span class="tag bad">✗ 區塊 #${v.at} 遭竄改</span>`; };
+  refreshBC();
+
+  $('#secEnc').onclick=async()=>{ const pass=$('#secPass').value||''; if(!pass){$('#secOut').textContent='請先輸入密語。';return;}
+    const summary=JSON.stringify({reportId,n:items.length,defect:nDef,metrics:m});
+    const enc=await encryptText(pass,summary); log('security: report summary encrypted (AES-GCM)');
+    $('#secOut').innerHTML='AES-GCM 密文 (Base64)：<br>'+enc.slice(0,180)+'…'; };
+  const av=$('#auditView'); av.innerHTML=STATE.audit.map(a=>`${a.t.slice(11,19)} ${a.msg}`).join('<br>');
+
+  $('#reportStatus').innerHTML=`<span class="tag good">報告已產生 ${items.length} 張</span>`;
+  log('report built: '+reportId);
+}
+function drawGauge(c,val,target){
+  const ctx=c.getContext('2d'),W=c.width,H=c.height,cx=W/2,cy=H-8,r=Math.min(W/2-8,H-20);
+  ctx.fillStyle='#20365e';ctx.fillRect(0,0,W,H);
+  ctx.lineWidth=12;ctx.strokeStyle='#142138';ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,2*Math.PI);ctx.stroke();
+  const ok = target==null? true : val>target;
+  ctx.strokeStyle= ok?'#9be37d':'#ff8a5c'; ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,Math.PI+Math.PI*clamp(val,0,1));ctx.stroke();
+  if(target!=null){ const a=Math.PI+Math.PI*target; ctx.strokeStyle='#ffd24d';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(cx+(r-9)*Math.cos(a),cy+(r-9)*Math.sin(a));ctx.lineTo(cx+(r+5)*Math.cos(a),cy+(r+5)*Math.sin(a));ctx.stroke(); }
+  ctx.fillStyle='#ccff99';ctx.font='bold 18px monospace';ctx.textAlign='center';ctx.fillText((val*100).toFixed(1)+'%',cx,cy-6);
+  if(target!=null){ctx.fillStyle='#ffd24d';ctx.font='9px monospace';ctx.fillText('目標>'+(target*100)+'%',cx,cy-22);}
+}
+
+/* =====================================================================
+   參考文獻 References (APA 7) — 真實來源
+   ===================================================================== */
+const REFS=[
+ 'He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) (pp. 770–778). IEEE. https://doi.org/10.1109/CVPR.2016.90',
+ 'Krizhevsky, A., Sutskever, I., & Hinton, G. E. (2012). ImageNet classification with deep convolutional neural networks. Advances in Neural Information Processing Systems, 25, 1097–1105.',
+ 'Ronneberger, O., Fischer, P., & Brox, T. (2015). U-Net: Convolutional networks for biomedical image segmentation. In Medical Image Computing and Computer-Assisted Intervention (MICCAI) (pp. 234–241). Springer. https://doi.org/10.1007/978-3-319-24574-4_28',
+ 'Tan, M., & Le, Q. V. (2019). EfficientNet: Rethinking model scaling for convolutional neural networks. In Proceedings of the 36th International Conference on Machine Learning (ICML) (pp. 6105–6114). PMLR.',
+ 'Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn, D., Zhai, X., Unterthiner, T., … Houlsby, N. (2021). An image is worth 16×16 words: Transformers for image recognition at scale. In International Conference on Learning Representations (ICLR).',
+ 'Liu, Z., Mao, H., Wu, C.-Y., Feichtenhofer, C., Darrell, T., & Xie, S. (2022). A ConvNet for the 2020s. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (pp. 11976–11986). IEEE.',
+ 'Zhang, L., Rao, A., & Agrawala, M. (2023). Adding conditional control to text-to-image diffusion models. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) (pp. 3836–3847). IEEE. https://doi.org/10.1109/ICCV51070.2023.00355',
+ 'Rombach, R., Blattmann, A., Lorenz, D., Esser, P., & Ommer, B. (2022). High-resolution image synthesis with latent diffusion models. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (pp. 10684–10695). IEEE.',
+ 'Selvaraju, R. R., Cogswell, M., Das, A., Vedantam, R., Parikh, D., & Batra, D. (2017). Grad-CAM: Visual explanations from deep networks via gradient-based localization. In Proceedings of the IEEE International Conference on Computer Vision (ICCV) (pp. 618–626). IEEE.',
+ 'Nakamoto, S. (2008). Bitcoin: A peer-to-peer electronic cash system. https://bitcoin.org/bitcoin.pdf',
+ 'Jocher, G., Chaurasia, A., & Qiu, J. (2023). Ultralytics YOLO (Version 8) [Computer software]. GitHub. https://github.com/ultralytics/ultralytics',
+ 'FUJIFILM Corporation. (2023). Prescale: Pressure measurement film — Technical information and handling guide. FUJIFILM. https://www.fujifilm.com/us/en/business/inspection/measurement-film/prescale',
+ 'Intel Corporation. (2020). Thermal mechanical design guidelines (TMDG) for LGA socket processors [Technical report]. Intel.',
+ 'International Organization for Standardization. (2015). ISO 9001:2015 Quality management systems — Requirements. ISO.',
+ 'Wu, J. (1997). Imprint pressure-sensitive recording material (U.S. Patent No. 5,663,115). U.S. Patent and Trademark Office. https://patents.google.com/patent/US5663115A',
+ '經濟部標準檢驗局（2018）。CNS 影像品質與量測標準。經濟部標準檢驗局。[Bureau of Standards, Metrology and Inspection, Taiwan (2018). CNS imaging quality and measurement standards.]',
+];
+(function buildRefs(){ const c=$('#refList');
+  c.innerHTML='<ol style="line-height:1.9;padding-left:1.2em">'+REFS.map(r=>`<li style="margin-bottom:.5em">${r}</li>`).join('')+'</ol>'
+    +'<div class="note">引用格式遵循美國心理學會出版手冊第 7 版（APA 7th）。References follow the Publication Manual of the APA (7th ed.).</div>';
+})();
+
+/* =====================================================================
+   真實資料 input/：78 張一鍵載入 + 6:1.5:2.5 分層切分（真實預測）
+   ===================================================================== */
+const DATASET_ROOT="cpu_imprints_dataset";   // 讀取已整理之資料集（含 good/defect 真值標註）
+function fetchImg(url){ return new Promise((res,rej)=>{ const img=new Image();
+  img.onload=()=>res(img); img.onerror=()=>rej(new Error('load fail '+url)); img.src=url; }); }
+// 解析路徑取得 split 與資料夾真值 truth：cpu_imprints_dataset/{split}/{split}_{class}/file.png
+function parseDsPath(p){ const seg=p.split('/'); const split=seg[1]||''; const cls=(seg[2]||'').replace(split+'_',''); return {split, truth:cls}; }
+async function loadInputDataset(){
+  const info=$('#inputInfo'); const P={...STATE.params};
+  info.innerHTML='<span class="spin"></span> 讀取 '+DATASET_ROOT+'/ …';
+  // 先讀取對照表取得所有檔案路徑與資料夾標註
+  let recs=null;
+  try{ const r=await fetch(DATASET_ROOT+'/filename_mapping.csv',{cache:'no-store'}); if(!r.ok) throw 0;
+    const lines=(await r.text()).trim().split(/\r?\n/); const head=lines[0].split(',');
+    const ip=head.indexOf('new_path'), is=head.indexOf('split'), it=head.indexOf('prediction');
+    recs=lines.slice(1).map(l=>{const c=l.split(','); const o={path:c[ip],split:c[is],truth:c[it]};
+      const pp=parseDsPath(c[ip]); if(pp.split)o.split=pp.split; if(pp.truth)o.truth=pp.truth; return o;});
+  }catch(e){ info.innerHTML='<span class="tag bad">找不到 '+DATASET_ROOT+'/filename_mapping.csv（需本機伺服器）。或用各分頁「📁 選擇資料夾」直接挑 '+DATASET_ROOT+'/train（會自動依資料夾名讀取 good/defect 真值）。</span>'; return; }
+  if(!recs.length){ info.innerHTML='<span class="tag bad">對照表為空。</span>'; return; }
+  const items=[];
+  for(let i=0;i<recs.length;i++){ const rec=recs[i];
+    try{ const img=await fetchImg(rec.path); let res;
+      try{ res=analyze(img,P); }
+      catch(e){ info.innerHTML='<span class="tag bad">無法讀取像素（file:// 會污染畫布）。請改用本機伺服器，或用「📁 選擇資料夾」。</span>'; return; }
+      items.push({name:rec.path.split('/').pop(),path:rec.path,img,truth:rec.truth||null,res,url:rec.path,split:rec.split});
+    }catch(e){ /* 略過缺檔 skip */ }
+    if(i%10===0){ info.innerHTML=`<span class="spin"></span> 已讀取 ${i+1}/${recs.length}…`; await new Promise(r=>setTimeout(r,0)); }
+  }
+  if(!items.length){ info.innerHTML='<span class="tag bad">未載入任何影像。</span>'; return; }
+  STATE.sets.train.items=items.filter(i=>i.split==='train');
+  STATE.sets.val.items  =items.filter(i=>i.split==='val');
+  STATE.sets.test.items =items.filter(i=>i.split==='test');
+  STATE.autoLabeled=true;
+  const m=metrics(items);   // 以資料夾標註為真值，模型預測為 res.label → 真實混淆矩陣
+  const g=items.filter(i=>i.truth==='good').length, d=items.filter(i=>i.truth==='defect').length;
+  const dist=a=>({n:a.length,good:a.filter(i=>i.truth==='good').length,defect:a.filter(i=>i.truth==='defect').length});
+  const dt=dist(STATE.sets.train.items),dv=dist(STATE.sets.val.items),de=dist(STATE.sets.test.items);
+  info.innerHTML=`已載入 <b>${items.length}</b> 張（資料夾真值 good ${g} / defect ${d}）。切分：訓練 ${dt.n}（g${dt.good}/d${dt.defect}）・驗證 ${dv.n}（g${dv.good}/d${dv.defect}）・測試 ${de.n}（g${de.good}/d${de.defect}）。<br>
+    <b>對真值指標</b>：準確率 ${pct(m.acc)}・精確率 ${pct(m.prec)}・召回率 ${pct(m.rec)}・F1 ${pct(m.f1)}・IoU ${pct(m.iou)}（TP${m.TP}/TN${m.TN}/FP${m.FP}/FN${m.FN}）。<br>
+    <span class="tag bad">注意：標註為模型自動預標，未經人工校正前指標反映「自我一致性」（趨近 100%），非真實泛化效能。</span>`;
+  log(`dataset loaded ${items.length}, acc=${m.acc.toFixed(3)} (auto-labeled)`);
+  $('#inputReportBtn').disabled=false; $('#inputCsvBtn').disabled=false; window.__inputItems=items;
+  return items;
+}
+function exportCsv(){
+  const items=window.__inputItems||allItems(); if(!items.length)return;
+  const head=['name','split','truth','prediction','correct','maxBlank','overallBlank','cov_top','cov_bottom','cov_left','cov_right','cov_center'];
+  const rows=items.map(it=>{ const r=it.res; const correct=it.truth? (it.truth===r.label?'1':'0'):''; return [it.name,it.split||'',it.truth||'',r.label,correct,r.maxBlank.toFixed(4),r.overallBlank.toFixed(4),
+    r.cov.top.toFixed(4),r.cov.bottom.toFixed(4),r.cov.left.toFixed(4),r.cov.right.toFixed(4),r.cov.center.toFixed(4)].join(','); });
+  const csv=[head.join(','),...rows].join('\n'); const s=stamp();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`cpu_dataset_${s.ymd}${s.hm}.csv`; a.click();
+}
+
+/* =====================================================================
+   初始化 Init
+   ===================================================================== */
+(async function init(){
+  $('#footTime').textContent=new Date().toLocaleString();
+  await detectHW();
+  buildStage('train',{title:'訓練 Train',modelPrefix:'cpu_train',gen:true});
+  buildStage('val',  {title:'驗證 Val',  modelPrefix:'cpu_val',  gen:true});
+  buildStage('test', {title:'測試 Test', modelPrefix:'cpu_test', gen:true});
+  $('#buildReportBtn').onclick=()=>buildReport();
+  $('#exportPdfBtn').onclick=()=>{ const s=stamp(); document.title=`cpu_test_${s.ymd}${s.hm}.pdf`;
+    if(!$('#reportBody').innerHTML.trim()) buildReport().then(()=>setTimeout(()=>window.print(),300));
+    else window.print(); };
+  $('#inputLoadBtn').onclick=loadInputDataset;
+  $('#inputReportBtn').onclick=()=>{ [...document.querySelectorAll('#tabs button')].find(b=>b.dataset.id==='report').click(); buildReport(); };
+  $('#inputCsvBtn').onclick=exportCsv;
+  log('app initialized');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>操作手冊 · CPU 壓痕智慧檢測平台 Operation Manual</title>
+<style>
+/* =========================================================================
+   操作手冊主題 — 沿用原平台「護眼深色」設計語言
+   背景 深藍 #1a2b4c / 文字 淡黃綠 #ccff99 — 全程無白底
+   Operation Manual — inherits the host platform's eye-care dark theme
+   ========================================================================= */
+:root{
+  --bg:        #1a2b4c;
+  --bg-2:      #142138;
+  --bg-3:      #20365e;
+  --bg-4:      #2a4170;
+  --line:      #3a5a8c;
+  --fg:        #ccff99;
+  --fg-dim:    #a9d97f;
+  --accent:    #ffe680;
+  --accent-2:  #8be0c0;
+  --good:      #9be37d;
+  --warn:      #ffd24d;
+  --bad:       #ff8a5c;
+  --bad-strong:#ff6b6b;
+  --shadow:    0 6px 24px rgba(0,0,0,.45);
+  --r:         14px;
+  --mono: ui-monospace,"SFMono-Regular","Cascadia Code",Consolas,monospace;
+  --cjk: "PingFang TC","Microsoft JhengHei","Noto Sans CJK TC","Heiti TC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --sidebar: 290px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:var(--cjk);
+  font-size:16px;line-height:1.75;-webkit-text-size-adjust:100%}
+::selection{background:#3a5a8c;color:#fff}
+a{color:var(--accent-2);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3,h4,h5{color:var(--accent);font-weight:700;line-height:1.35}
+h2{font-size:1.55rem;margin:.1em 0 .55em;border-left:6px solid var(--accent);padding-left:.55em;scroll-margin-top:20px}
+h3{font-size:1.2rem;color:var(--accent-2);margin:1.4em 0 .45em;scroll-margin-top:20px}
+h4{font-size:1.04rem;color:var(--fg);margin:1em 0 .3em}
+h5{font-size:.95rem;color:var(--accent-2);margin:.8em 0 .2em}
+p{margin:.55em 0}
+code,kbd,.mono{font-family:var(--mono)}
+code{color:var(--accent);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.86em}
+kbd{display:inline-block;background:var(--bg-4);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;
+  padding:1px 8px;font-size:.82em;color:var(--fg)}
+small{color:var(--fg-dim)}
+strong,b{color:var(--accent)}
+hr{border:0;border-top:1px dashed var(--line);margin:1.6em 0}
+ul,ol{margin:.5em 0;padding-left:1.4em}
+li{margin:.28em 0}
+.en{color:var(--fg-dim);font-weight:400}
+
+/* ---- Layout: sidebar + content ---- */
+.wrap{display:flex;align-items:flex-start;max-width:1280px;margin:0 auto}
+aside.toc{position:sticky;top:0;width:var(--sidebar);flex:0 0 var(--sidebar);height:100vh;overflow-y:auto;
+  background:linear-gradient(180deg,#142138,#16263f);border-right:1px solid var(--line);padding:20px 16px 60px}
+aside.toc .brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+aside.toc .brand .logo{width:38px;height:38px;border-radius:10px;background:radial-gradient(circle at 30% 30%,#2a4170,#0e1830);
+  border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto}
+aside.toc .brand .logo svg{width:24px;height:24px}
+aside.toc .brand .tt{font-size:.92rem;font-weight:800;color:var(--accent);line-height:1.2}
+aside.toc .brand .st{font-size:.64rem;color:var(--fg-dim);letter-spacing:.4px}
+aside.toc .verbox{font-size:.7rem;color:var(--fg-dim);background:var(--bg-3);border:1px solid var(--line);
+  border-radius:8px;padding:6px 9px;margin:10px 0 14px}
+aside.toc nav a{display:block;font-size:.86rem;color:var(--fg-dim);padding:5px 9px;border-radius:7px;
+  border-left:3px solid transparent;transition:.14s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+aside.toc nav a:hover{background:var(--bg-3);color:var(--fg);text-decoration:none}
+aside.toc nav a.active{background:var(--bg-3);color:var(--accent);border-left-color:var(--accent);font-weight:700}
+aside.toc nav a.sub{padding-left:24px;font-size:.79rem}
+aside.toc nav .grp{font-size:.68rem;color:var(--accent-2);text-transform:uppercase;letter-spacing:1px;
+  margin:14px 0 4px 9px;opacity:.85}
+main{flex:1 1 auto;min-width:0;padding:0 30px 90px}
+
+/* ---- Cover / hero ---- */
+.cover{background:linear-gradient(135deg,#16263f 0%,#1a2b4c 55%,#20365e 100%);
+  border-bottom:2px solid var(--line);padding:54px 30px 40px;margin:0 -30px 30px;position:relative;overflow:hidden}
+.cover::after{content:"";position:absolute;inset:0;background:
+  radial-gradient(circle at 88% 12%,rgba(255,230,128,.10),transparent 42%),
+  radial-gradient(circle at 12% 92%,rgba(139,224,192,.10),transparent 40%);pointer-events:none}
+.cover .kicker{display:inline-block;font-size:.74rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent-2);
+  border:1px solid var(--line);border-radius:20px;padding:4px 14px;margin-bottom:18px}
+.cover h1{font-size:2.35rem;margin:.1em 0;color:var(--accent);letter-spacing:.5px}
+.cover .sub{font-size:1.02rem;color:var(--fg);max-width:680px}
+.cover .sub .en{display:block;font-size:.84rem;margin-top:4px}
+.cover .biglogo{position:absolute;right:34px;top:50%;transform:translateY(-50%);width:120px;height:120px;
+  border-radius:26px;background:radial-gradient(circle at 30% 30%,#2a4170,#0e1830);border:1px solid var(--line);
+  display:grid;place-items:center;box-shadow:var(--shadow)}
+.cover .biglogo svg{width:74px;height:74px}
+.docctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:26px;max-width:760px}
+.docctrl div{background:rgba(20,33,56,.6);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.docctrl .l{font-size:.68rem;color:var(--fg-dim);letter-spacing:.5px}
+.docctrl .v{font-size:.9rem;color:var(--accent);font-weight:700}
+
+/* ---- Cards / panels ---- */
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:18px 22px;margin:16px 0;box-shadow:var(--shadow)}
+.card.sub{background:var(--bg-3)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+
+/* ---- Callouts ---- */
+.note{background:var(--bg-3);border-left:4px solid var(--accent-2);border-radius:8px;padding:11px 15px;margin:12px 0;font-size:.94rem}
+.note .h{font-weight:700;color:var(--accent-2);display:block;margin-bottom:2px}
+.note.tip{border-left-color:var(--good)} .note.tip .h{color:var(--good)}
+.note.warn{border-left-color:var(--warn)} .note.warn .h{color:var(--warn)}
+.note.bad{border-left-color:var(--bad)} .note.bad .h{color:var(--bad)}
+.note.key{border-left-color:var(--accent)} .note.key .h{color:var(--accent)}
+
+/* ---- Tags ---- */
+.tag{display:inline-block;font-size:.72rem;padding:2px 9px;border-radius:20px;border:1px solid var(--line);
+  background:var(--bg-3);color:var(--fg-dim);margin:2px}
+.tag.good{color:var(--good);border-color:#3f7a40}
+.tag.bad{color:var(--bad);border-color:#7a4a3f}
+.tag.acc{color:var(--accent);border-color:#7a6f3f}
+.tag.tab{color:var(--accent-2);border-color:#3f6f6a}
+
+/* ---- Steps ---- */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:14px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:4px 0 16px 50px;border-left:2px dashed var(--line);margin-left:17px}
+ol.steps>li:last-child{border-left:2px solid transparent}
+ol.steps>li::before{content:counter(st);position:absolute;left:-17px;top:0;width:34px;height:34px;border-radius:50%;
+  background:var(--accent);color:#0e1830;font-weight:800;display:grid;place-items:center;font-family:var(--mono)}
+ol.steps>li .sh{font-weight:700;color:var(--accent);display:block;margin-bottom:2px}
+ol.steps.alt>li::before{background:var(--accent-2)}
+
+/* ---- UI element reference chips ---- */
+.uichip{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#0e1830;border-radius:9px;
+  padding:2px 11px;font-weight:700;font-size:.85rem;white-space:nowrap;font-family:var(--cjk)}
+.uichip.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.uichip.alt{background:var(--accent-2);color:#0e1830}
+
+/* ---- Tables ---- */
+.tbl-wrap{overflow:auto;border-radius:10px;border:1px solid var(--line);margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--bg-3);color:var(--accent);position:sticky;top:0}
+tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+td code{white-space:nowrap}
+
+/* ---- Formula ---- */
+.formula{font-family:var(--mono);background:var(--bg);border:1px dashed var(--line);border-radius:10px;
+  padding:13px 15px;margin:10px 0;color:var(--accent);font-size:.92rem;overflow-x:auto;white-space:pre;line-height:1.65}
+
+/* ---- File tree ---- */
+.tree{font-family:var(--mono);font-size:.84rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;white-space:pre;overflow-x:auto;color:var(--fg-dim);line-height:1.7}
+.tree b{color:var(--accent)} .tree i{color:var(--accent-2);font-style:normal}
+
+/* ---- Pipeline strip ---- */
+.pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:14px 0}
+.pipe .pn{flex:1 1 120px;min-width:110px;background:var(--bg-3);border:1px solid var(--line);border-radius:11px;
+  padding:10px;text-align:center;position:relative}
+.pipe .pn .ic{font-size:1.4rem}
+.pipe .pn .t{font-size:.8rem;font-weight:700;color:var(--accent);margin-top:2px}
+.pipe .pn .e{font-size:.64rem;color:var(--fg-dim)}
+.pipe .pn .num{position:absolute;top:-9px;left:-9px;width:22px;height:22px;border-radius:50%;background:var(--accent);
+  color:#0e1830;font-size:.7rem;font-weight:800;display:grid;place-items:center;font-family:var(--mono)}
+
+/* ---- Split bar ---- */
+.splitbar{display:flex;height:36px;border-radius:8px;overflow:hidden;border:1px solid var(--line);font-size:.82rem;font-weight:700;margin:10px 0}
+.splitbar div{display:grid;place-items:center;color:#0e1830}
+
+/* ---- Param card ---- */
+.pcard{background:var(--bg-3);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.pcard .pn{font-family:var(--mono);font-size:.82rem;color:var(--accent-2)}
+.pcard .pv{font-size:1.35rem;font-weight:800;color:var(--accent);font-family:var(--mono)}
+.pcard .pd{font-size:.82rem;color:var(--fg-dim)}
+
+/* ---- Misc ---- */
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--fg-dim);align-items:center}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:5px}
+.muted{color:var(--fg-dim)}
+.center{text-align:center}
+.xref{font-size:.82rem;color:var(--accent-2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;background:var(--bg-3)}
+details.acc{margin:10px 0}
+details.acc>summary{cursor:pointer;padding:10px 14px;background:var(--bg-3);border:1px solid var(--line);border-radius:9px;
+  font-weight:700;color:var(--accent);list-style:none}
+details.acc>summary::-webkit-details-marker{display:none}
+details.acc>summary::before{content:"▸ ";color:var(--accent-2)}
+details.acc[open]>summary::before{content:"▾ "}
+details.acc .body{padding:8px 16px;border:1px solid var(--line);border-top:0;border-radius:0 0 9px 9px}
+
+.backtop{position:fixed;right:22px;bottom:22px;z-index:60;background:var(--accent);color:#0e1830;border:none;
+  width:46px;height:46px;border-radius:50%;font-size:1.2rem;cursor:pointer;box-shadow:var(--shadow);display:none}
+.backtop.show{display:block}
+
+footer.doc{border-top:1px solid var(--line);padding:22px 30px;color:var(--fg-dim);font-size:.8rem;margin-top:30px}
+
+.topbar{display:none}
+
+/* ---- Responsive ---- */
+@media(max-width:920px){
+  aside.toc{position:fixed;left:0;top:0;z-index:80;transform:translateX(-100%);transition:.25s;box-shadow:var(--shadow)}
+  aside.toc.open{transform:none}
+  main{padding:0 16px 80px}
+  .cover{margin:0 -16px 24px;padding:70px 18px 34px}
+  .cover .biglogo{display:none}
+  .topbar{display:flex;position:sticky;top:0;z-index:70;align-items:center;gap:12px;background:#142138;
+    border-bottom:1px solid var(--line);padding:10px 16px}
+  .topbar button{background:var(--accent);color:#0e1830;border:none;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}
+  .topbar .tt{font-size:.9rem;font-weight:800;color:var(--accent)}
+}
+
+/* ---- Print / PDF：維持深色，僅輸出內容 ---- */
+@media print{
+  @page{size:A4;margin:14mm}
+  html,body{background:var(--bg)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  aside.toc,.topbar,.backtop{display:none!important}
+  .wrap{display:block;max-width:none}
+  main{padding:0}
+  .cover{margin:0 0 18px}
+  .card,.note,.tbl-wrap,ol.steps>li,.pcard,details.acc{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  details.acc>.body{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<!-- 行動版頂列 mobile topbar -->
+<div class="topbar">
+  <button id="menuBtn" aria-label="目錄">☰ 目錄</button>
+  <span class="tt">CPU 壓痕檢測平台 · 操作手冊</span>
+</div>
+
+<div class="wrap">
+<!-- ============================ 側邊目錄 SIDEBAR TOC ============================ -->
+<aside class="toc" id="toc">
+  <div class="brand">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ccff99" stroke-width="1.6">
+        <rect x="6" y="6" width="12" height="12" rx="2"/>
+        <path d="M9 3v3M12 3v3M15 3v3M9 18v3M12 18v3M15 18v3M3 9h3M3 12h3M3 15h3M18 9h3M18 12h3M18 15h3"/>
+        <circle cx="12" cy="12" r="2.4" fill="#ccff99" stroke="none"/>
+      </svg>
+    </div>
+    <div>
+      <div class="tt">操作手冊</div>
+      <div class="st">Operation Manual</div>
+    </div>
+  </div>
+  <div class="verbox">版本 v2.0 對應手冊 · 適用平台 <code>cpu_imprint_inspector.html</code></div>
+  <nav id="navlinks">
+    <div class="grp">入門 Getting Started</div>
+    <a href="#s0">0 · 文件資訊 About</a>
+    <a href="#s1">1 · 系統簡介 Overview</a>
+    <a href="#s2">2 · 快速開始 Quick Start</a>
+    <div class="grp">原理與資料 Principles &amp; Data</div>
+    <a href="#s3">3 · 操作原理 Principles</a>
+    <a href="#s4">4 · 拍攝與資料準備 Capture</a>
+    <div class="grp">操作流程 Workflow</div>
+    <a href="#s5">5 · 完整操作流程 Workflow</a>
+    <a href="#s5-2" class="sub">5.2 訓練集 Training</a>
+    <a href="#s5-3" class="sub">5.3 驗證集 Validation</a>
+    <a href="#s5-4" class="sub">5.4 測試集 Test</a>
+    <a href="#s5-5" class="sub">5.5 一鍵載入資料集</a>
+    <a href="#s6">6 · 參數調校指南 Tuning</a>
+    <a href="#s7">7 · 指標判讀 Metrics</a>
+    <div class="grp">報告與分析 Report</div>
+    <a href="#s8">8 · 報告功能詳解 Report</a>
+    <a href="#s9">9 · 根因分析速查 RCA</a>
+    <div class="grp">支援 Support</div>
+    <a href="#s10">10 · 疑難排解 Troubleshooting</a>
+    <a href="#s11">11 · 常見問題 FAQ</a>
+    <a href="#s12">12 · 安全與隱私 Security</a>
+    <div class="grp">附錄 Appendix</div>
+    <a href="#aa">A · 名詞對照表 Glossary</a>
+    <a href="#ab">B · 檔名路徑速查</a>
+    <a href="#ac">C · 模型對照表 Models</a>
+    <a href="#ad">D · 技術規格 Specs</a>
+    <a href="#refs">參考文獻 References</a>
+  </nav>
+</aside>
+
+<!-- ============================ 內容 CONTENT ============================ -->
+<main>
+
+<!-- ===== 封面 COVER ===== -->
+<section class="cover">
+  <div class="biglogo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ccff99" stroke-width="1.5">
+      <rect x="6" y="6" width="12" height="12" rx="2"/>
+      <path d="M9 3v3M12 3v3M15 3v3M9 18v3M12 18v3M15 18v3M3 9h3M3 12h3M3 15h3M18 9h3M18 12h3M18 15h3"/>
+      <circle cx="12" cy="12" r="2.4" fill="#ccff99" stroke="none"/>
+    </svg>
+  </div>
+  <span class="kicker">Professional Operation Manual · 專業操作手冊</span>
+  <h1>CPU 感壓紙壓痕<br>智慧檢測與分析平台</h1>
+  <div class="sub">完整操作手冊：從拍攝、資料準備、訓練／驗證／測試到專業報告與根因分析的逐步指引。
+    <span class="en">CPU Thermal-Contact Imprint Inspector — a complete, step-by-step guide covering capture, data preparation, train / validation / test, professional reporting and root-cause analysis.</span>
+  </div>
+  <div class="docctrl">
+    <div><div class="l">文件版本 DOC VER.</div><div class="v">Rev. 1.0</div></div>
+    <div><div class="l">對應軟體 SOFTWARE</div><div class="v">Platform v2.0</div></div>
+    <div><div class="l">語言 LANGUAGE</div><div class="v">繁中 / English</div></div>
+    <div><div class="l">運算位置 COMPUTE</div><div class="v">本機 Local-only</div></div>
+    <div><div class="l">讀者 AUDIENCE</div><div class="v">品保 / 製程 / RD</div></div>
+  </div>
+</section>
+
+<!-- ===== 0 文件資訊 ===== -->
+<section id="s0">
+  <h2>0. 文件資訊 <span class="en">Document Information</span></h2>
+
+  <div class="card">
+    <h3>0.1 本手冊用途與讀者 Purpose &amp; Audience</h3>
+    <p>本手冊說明如何操作 <b>CPU 壓痕智慧檢測平台</b>（單一檔案 <code>cpu_imprint_inspector.html</code>）。平台針對 CPU 散熱介面之<b>感壓紙壓痕</b>（Fujifilm Prescale 類）照片，自動判別<b>均勻 (good)／不均勻 (defect)</b>、定位缺失接觸區、產生熱學視覺化與專業檢測報告。</p>
+    <p class="muted">This manual explains how to operate the single-file CPU Imprint Inspector. The platform classifies pressure-sensitive imprint photos of a CPU thermal interface as good/defect, locates missing-contact regions, renders thermal visualizations, and generates a professional report.</p>
+    <div class="tbl-wrap"><table>
+      <tr><th>讀者對象 Audience</th><th>本手冊可協助 You will learn to…</th></tr>
+      <tr><td>品保 / 檢驗人員 QA</td><td>正確拍攝壓痕、載入影像、判讀 good/defect 與缺失區、產生報告。</td></tr>
+      <tr><td>製程 / 設備工程師 Process</td><td>由缺失型態做根因分析 (RCA)、回饋鎖附扭力與安裝對策。</td></tr>
+      <tr><td>資料 / RD 工程師 Data/RD</td><td>規劃資料集、調校門檻參數、執行 MCP 自動微調、判讀指標。</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h3>0.2 手冊慣例 Conventions Used</h3>
+    <ul>
+      <li><span class="uichip">黃色按鈕</span> 代表平台中可點擊的<b>主要按鈕</b>；<span class="uichip ghost">外框按鈕</span> 為次要動作；<span class="uichip alt">青色按鈕</span> 為輔助動作。</li>
+      <li><code>等寬字</code> 代表檔名、參數名、程式數值或路徑（例：<code>redness=18</code>、<code>cpu_train_*.pth</code>）。</li>
+      <li><span class="tag tab">分頁名</span> 代表平台頂端的功能分頁（共 7 個）。</li>
+      <li><span class="xref">↗ 參見 §x.y</span> 為交叉參照，指向本手冊其他章節。</li>
+      <li>標註框：<span class="tag acc">重點 Key</span>、<span class="tag good">技巧 Tip</span>、<span class="tag" style="color:var(--warn);border-color:#7a6f3f">注意 Warn</span>、<span class="tag bad">警告 Caution</span>。</li>
+    </ul>
+    <div class="note key"><span class="h">關於數值 About numbers</span>本手冊所列的預設參數、門檻、目標值與技術常數，皆<b>直接取自平台原始碼</b>，與實際執行行為一致。<span class="en">All default parameters, thresholds, targets and constants below are taken directly from the platform source and match runtime behavior.</span></div>
+  </div>
+</section>
+
+<!-- ===== 1 系統簡介 ===== -->
+<section id="s1">
+  <h2>1. 系統簡介 <span class="en">System Overview</span></h2>
+
+  <div class="card">
+    <h3>1.1 這是什麼 What It Is</h3>
+    <p>平台是一個<b>單一 HTML 檔、可離線執行</b>的瀏覽器應用。所有影像分析、指標計算、最佳化與報告產生<b>全部在你的瀏覽器本機完成，不上傳任何資料</b>。介面採護眼深色模式（背景深藍 <code>#1a2b4c</code>、文字淡黃綠 <code>#ccff99</code>），全程繁體中文／English 對照。</p>
+    <div class="note tip"><span class="h">核心價值 Core idea</span>壓痕代表 CPU 頂蓋 (IHS) 與散熱器之<b>實際接觸壓力分佈</b>。接觸良好處顯色飽和；<b>空白＝缺失接觸＝熱阻升高＝潛在熱點</b>。系統量測「4 邊框＋中央」共 5 區的空白缺失比例，依 <b>20% 門檻</b>判定。</div>
+  </div>
+
+  <div class="card">
+    <h3>1.2 核心功能 Key Features</h3>
+    <div class="grid g2">
+      <div class="pcard"><b>① 影像接觸偵測</b><div class="pd">粉紅顯色 + 暗度雙判據，建立 48×48 接觸密度網格。</div></div>
+      <div class="pcard"><b>② 五區缺失量測</b><div class="pd">top / bottom / left / right / center 覆蓋率與空白率。</div></div>
+      <div class="pcard"><b>③ 5 項指標評估</b><div class="pd">準確率／精確率／召回率／F1／IoU + 混淆矩陣。</div></div>
+      <div class="pcard"><b>④ MCP 自動微調</b><div class="pd">門檻參數最佳化搜尋，收斂即停止，上限 1000 次。</div></div>
+      <div class="pcard"><b>⑤ 熱學視覺化</b><div class="pd">溫度梯度圖（模型推估）（每 1°C 一色）＋熱流密度向量 q=−k∇T。</div></div>
+      <div class="pcard"><b>⑥ ControlNet 標註</b><div class="pd">於原圖框出缺失區並標示空白百分比。</div></div>
+      <div class="pcard"><b>⑦ 專業報告</b><div class="pd">KPI 儀表板、RCA 知識庫、資料庫、雜湊鏈、資安、PDF。</div></div>
+      <div class="pcard"><b>⑧ 硬體感知推薦</b><div class="pd">偵測 CPU/RAM/GPU 等級，推薦辨識與生成模型前 5 名。</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>1.3 運作架構 Pipeline at a Glance</h3>
+    <div class="pipe">
+      <div class="pn"><span class="num">1</span><div class="ic">📷</div><div class="t">拍攝採集</div><div class="e">Capture</div></div>
+      <div class="pn"><span class="num">2</span><div class="ic">🗂️</div><div class="t">資料切分</div><div class="e">Split</div></div>
+      <div class="pn"><span class="num">3</span><div class="ic">🔬</div><div class="t">特徵擷取</div><div class="e">Feature</div></div>
+      <div class="pn"><span class="num">4</span><div class="ic">🧠</div><div class="t">模型判別</div><div class="e">Classify</div></div>
+      <div class="pn"><span class="num">5</span><div class="ic">🎯</div><div class="t">MCP 微調</div><div class="e">Auto-tune</div></div>
+      <div class="pn"><span class="num">6</span><div class="ic">📈</div><div class="t">指標評估</div><div class="e">Evaluate</div></div>
+      <div class="pn"><span class="num">7</span><div class="ic">💾</div><div class="t">模型保存</div><div class="e">Save</div></div>
+      <div class="pn"><span class="num">8</span><div class="ic">📑</div><div class="t">報告產出</div><div class="e">Report</div></div>
+    </div>
+    <p class="muted">在平台「<span class="tag tab">1 總覽原理</span>」分頁中，此流程圖為<b>互動式</b>：點擊任一節點即顯示該步驟詳細原理，並有自動巡覽動畫。</p>
+  </div>
+
+  <div class="card">
+    <h3>1.4 技術誠實聲明 Honesty Statement</h3>
+    <p>請務必理解平台「真實計算」與「流程展示」的界線，以正確解讀結果：</p>
+    <div class="tbl-wrap"><table>
+      <tr><th>類別</th><th>內容</th></tr>
+      <tr><td><span class="tag good">真實運算 Real</span></td><td>影像接觸像素偵測、5 區覆蓋率、混淆矩陣與 5 項指標、MCP 門檻參數最佳化、溫度梯度圖（模型推估）、熱流向量、ControlNet 缺失標註 — 皆於瀏覽器<b>實際計算</b>。</td></tr>
+      <tr><td><span class="tag acc">流程展示 Demo</span></td><td>深度 CNN/U-Net 的 GPU 訓練與二進位 <code>.pth</code> 張量權重<b>無法在瀏覽器產生</b>；平台以「<b>門檻型形態學分類器</b>」實作真實學習，並依規格命名下載模型檔（內含已學參數＋中繼資料）。深度學習工作流以動畫與說明呈現。</td></tr>
+      <tr><td><span class="tag" style="color:var(--accent-2);border-color:#3f6f6a">本機隱私 Privacy</span></td><td>所有影像僅於你的瀏覽器內處理，<b>不上傳</b>。All processing is local; no upload.</td></tr>
+    </table></div>
+    <div class="note bad"><span class="h">重要：自我一致性 ≠ 泛化效能</span>若標註來自模型<b>自動預標</b>（未經人工校正），指標會趨近 100%，這只反映「自我一致性」，<b>並非真實泛化能力</b>。<span class="xref">↗ 參見 §7.4、§10</span></div>
+  </div>
+</section>
+
+<!-- ===== 2 快速開始 ===== -->
+<section id="s2">
+  <h2>2. 快速開始 <span class="en">Quick Start</span></h2>
+
+  <div class="card">
+    <h3>2.1 系統需求 System Requirements</h3>
+    <div class="tbl-wrap"><table>
+      <tr><th>項目</th><th>需求</th><th>說明</th></tr>
+      <tr><td>瀏覽器 Browser</td><td>Chrome / Edge / Firefox / Safari 近年版本</td><td>需支援 Canvas、IndexedDB、Web Crypto。建議 Chrome / Edge。</td></tr>
+      <tr><td>作業系統 OS</td><td>Windows / macOS / Linux</td><td>純前端，無需安裝後端。</td></tr>
+      <tr><td>網路 Network</td><td>非必要</td><td>可完全離線；不上傳資料。</td></tr>
+      <tr><td>硬體 Hardware</td><td>一般文書電腦即可</td><td>平台會自動偵測 CPU 核心／RAM／GPU 並標示等級（low / mid / high）。</td></tr>
+      <tr><td>本機伺服器 Local server</td><td>使用「一鍵載入資料集」時需要</td><td>用於讀取 <code>filename_mapping.csv</code> 與影像，避免 <code>file://</code> 畫布污染。<span class="xref">↗ §2.2</span></td></tr>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h3>2.2 兩種開啟方式 Two Ways to Open</h3>
+    <h4>方式 A — 直接雙擊開檔（最快） <span class="en">Double-click</span></h4>
+    <p>直接以瀏覽器開啟 <code>cpu_imprint_inspector.html</code>。可使用<b>全部互動功能</b>：用「📁 選擇資料夾」或「🖼️ 選擇多個檔案」載入影像、執行訓練/驗證/測試、產生報告、匯出 PDF/CSV。</p>
+    <div class="note warn"><span class="h">限制 Limitation</span>以 <code>file://</code> 雙擊開檔時，「<span class="tag tab">2 資料集</span>」分頁的「📂 載入 cpu_imprints_dataset/（含真值）」會因瀏覽器安全限制（畫布污染 canvas tainting）而無法讀取像素。此情況請改用方式 B，或改用各分頁的「📁 選擇資料夾」載入（不受影響）。</div>
+
+    <h4>方式 B — 本機伺服器（完整功能） <span class="en">Local server</span></h4>
+    <p>在 HTML 檔所在資料夾啟動一個簡易本機伺服器，再以 <code>http://localhost</code> 開啟，即可使用「一鍵載入 <code>cpu_imprints_dataset/</code>（含真值）」功能。常見啟動指令：</p>
+    <div class="formula">Python 3：   python -m http.server 8000
+Node.js：    npx http-server -p 8000
+之後於瀏覽器開啟：   http://localhost:8000/cpu_imprint_inspector.html</div>
+    <div class="note tip"><span class="h">為何需要伺服器</span>透過 <code>http://</code> 載入的影像不會污染畫布，平台才能讀取像素並比對 <code>filename_mapping.csv</code> 內的資料夾真值，直接算出含真值的 5 項指標。</div>
+  </div>
+
+  <div class="card">
+    <h3>2.3 五分鐘上手（用內建示範樣本） <span class="en">First Run in 5 Minutes</span></h3>
+    <ol class="steps">
+      <li><span class="sh">開啟平台</span>以瀏覽器開啟 <code>cpu_imprint_inspector.html</code>。標題列右上角的 <code>環境晶片</code> 會顯示偵測到的硬體（核心數 / RAM / GPU / 等級）。</li>
+      <li><span class="sh">切到訓練分頁</span>點頂端 <span class="tag tab">3 訓練集</span>。</li>
+      <li><span class="sh">載入示範樣本</span>於「① 批次載入影像」按 <span class="uichip ghost">✨ 載入示範樣本 Demo</span>，會載入 12 張合成樣本（good 6 / defect 6，含真值）。</li>
+      <li><span class="sh">執行</span>於「④ 執行 MCP 自動微調」按 <span class="uichip">▶ 開始 訓練 Train</span>。觀察 收斂曲線（1−F1）下降、KPI 卡片與混淆矩陣、結果縮圖（紅框＝缺失區）。</li>
+      <li><span class="sh">儲存模型</span>按 <span class="uichip ghost">💾 儲存模型</span>，下載 <code>cpu_train_yymmddhhmm.pth</code>（內含已學參數，JSON 格式）。</li>
+      <li><span class="sh">產生報告</span>切到 <span class="tag tab">6 報告</span>，按 <span class="uichip">產生 / 更新報告</span>，瀏覽 KPI、三聯圖、RCA。再按 <span class="uichip alt">匯出 PDF</span> 輸出 <code>cpu_test_yymmddhhmm.pdf</code>。</li>
+    </ol>
+    <div class="note key"><span class="h">恭喜</span>你已完整走過一遍「載入 → 分析 → 評估 → 報告」流程。接著請依 <span class="xref">↗ §4</span> 準備真實壓痕資料，再依 <span class="xref">↗ §5</span> 正式操作。</div>
+  </div>
+
+  <div class="card">
+    <h3>2.4 介面總覽 Interface Tour</h3>
+    <ul>
+      <li><b>標題列 Header</b>：左為標誌與平台名稱；右為<b>環境晶片 envChip</b>，顯示 <code>🖥️ N 核 / RAM xGB / GPU:WebGPU或WebGL / 等級 LOW·MID·HIGH</code>。</li>
+      <li><b>功能分頁 Tabs（7 個）</b>：依序為 ① 總覽原理、② 資料集、③ 訓練集、④ 驗證集、⑤ 測試集、⑥ 報告、⑦ 參考文獻。可橫向捲動。</li>
+      <li><b>內容區 Main</b>：當前分頁的卡片式內容。</li>
+      <li><b>頁尾 Footer</b>：版本與產生時間。</li>
+    </ul>
+    <div class="tbl-wrap"><table>
+      <tr><th>#</th><th>分頁</th><th>用途</th><th>本手冊章節</th></tr>
+      <tr><td>1</td><td><span class="tag tab">總覽原理 Overview</span></td><td>原理說明、互動流程圖、指標公式、誠實聲明</td><td><span class="xref">§1、§3</span></td></tr>
+      <tr><td>2</td><td><span class="tag tab">資料集 Dataset</span></td><td>拍攝指引、good/defect 定義、資料夾結構、切分、一鍵載入</td><td><span class="xref">§4、§5.5</span></td></tr>
+      <tr><td>3</td><td><span class="tag tab">訓練集 Train</span></td><td>載入影像、選模型、設參數、MCP 微調、存模型</td><td><span class="xref">§5.2</span></td></tr>
+      <tr><td>4</td><td><span class="tag tab">驗證集 Val</span></td><td>依訓練模型驗證</td><td><span class="xref">§5.3</span></td></tr>
+      <tr><td>5</td><td><span class="tag tab">測試集 Test</span></td><td>依驗證模型測試</td><td><span class="xref">§5.4</span></td></tr>
+      <tr><td>6</td><td><span class="tag tab">報告 Report</span></td><td>整合報告、視覺化、RCA、DB、雜湊鏈、資安、PDF</td><td><span class="xref">§8</span></td></tr>
+      <tr><td>7</td><td><span class="tag tab">參考文獻 Refs</span></td><td>APA 7 文獻清單</td><td><span class="xref">References</span></td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ===== 3 操作原理 ===== -->
+<section id="s3">
+  <h2>3. 操作原理 <span class="en">Operating Principles</span></h2>
+  <p class="muted">理解原理能讓你正確設定參數、判讀結果並做根因分析。本章對應平台「<span class="tag tab">1 總覽原理</span>」分頁。</p>
+
+  <div class="card">
+    <h3>3.1 接觸像素偵測 Contact Pixel Detection</h3>
+    <p>平台把每張影像縮放到 <code>240×240</code> 分析畫布，逐像素判斷是否為「接觸像素」。判據有二，<b>任一成立即視為接觸</b>：</p>
+    <div class="formula">顯色強度 redness = R − (G + B) ÷ 2          ← 感壓紙受壓顯粉紅
+亮度       lum     = 0.299·R + 0.587·G + 0.114·B
+
+接觸 contact = 1，若 ( redness &gt; 門檻 redness=18 )  或  ( lum &lt; 暗度門檻 darkT=130 )
+             = 0，否則</div>
+    <div class="note"><span class="h">為何用兩個判據</span>粉紅顯色（redness）抓住正常受壓區；暗度（darkness）補抓深色／陰影接觸，降低漏判。門檻 <code>redness</code> 可在各分頁的「③ 參數與目標」調整。</div>
+  </div>
+
+  <div class="card">
+    <h3>3.2 接觸密度網格 Contact Density Grid</h3>
+    <p>畫布被切成 <code>48×48</code> 的網格。每個網格的<b>接觸密度</b> = 該格內接觸像素數 ÷ 像素總數（值介於 0~1）。此密度圖即後續區域量測、缺失定位與溫度場的基礎。</p>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--good)"></span>密度高＝接觸良好</span>
+      <span><span class="swatch" style="background:var(--bad)"></span>密度低＝接觸缺失（熱點候選）</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>3.3 五區量測法 The Five-Region Method</h3>
+    <p>平台在壓痕內容區（由 <code>margin</code> 邊距界定，或開啟 <code>autoBBox</code> 自動偵測範圍）切出 5 個量測區，邊框寬度由 <code>frame</code> 比例決定：</p>
+    <div class="tbl-wrap"><table>
+      <tr><th>區域 Region</th><th>位置</th><th>常見缺失成因（速覽）</th></tr>
+      <tr><td><b>top 上框</b></td><td>內容區上緣邊框帶</td><td rowspan="4">安裝傾斜、單邊壓力不足、立柱高度不一、IHS 翹曲。<span class="xref">↗ §9</span></td></tr>
+      <tr><td><b>bottom 下框</b></td><td>內容區下緣邊框帶</td></tr>
+      <tr><td><b>left 左框</b></td><td>內容區左緣邊框帶</td></tr>
+      <tr><td><b>right 右框</b></td><td>內容區右緣邊框帶</td></tr>
+      <tr><td><b>center 中央</b></td><td>四邊框內的中央方塊</td><td>TIM 量不足、底面中央凹陷、泵出效應。</td></tr>
+    </table></div>
+    <p>每區計算<b>覆蓋率 Coverage</b>（該區平均接觸密度）與<b>空白率 Blank</b>：</p>
+    <div class="formula">Coverage(r) = 區域 r 的平均接觸密度
+Blank(r)    = 1 − Coverage(r)</div>
+  </div>
+
+  <div class="card">
+    <h3>3.4 判定規則 Decision Rule（20% 門檻）</h3>
+    <div class="formula">maxBlank = max[ Blank(top), Blank(bottom), Blank(left), Blank(right), Blank(center) ]
+
+判定 Rule：  若 maxBlank &gt; 空白門檻 blank(=20%)   ⇒  defect 不均勻
+            否則                                ⇒  good 均勻</div>
+    <p>意即：<b>只要任何一區的空白缺失超過 20%，整張即判為 defect</b>。這是嚴格的「最差區」邏輯，符合品保「任何接觸不良都是風險」的精神。門檻 <code>blank</code> 預設 0.20，可在「③ 參數與目標」調整。</p>
+    <div class="note warn"><span class="h">先天限制 Inherent limit</span>純「<b>裸紙、完全無接觸</b>」因感壓紙暖色與極淡接觸在色彩上重疊，<b>無法穩定自動區分</b>。因此 <code>redness</code> 預設 18 是用來抓「<b>接觸弱或缺失</b>」的可重現門檻，而非區分裸紙。</div>
+  </div>
+
+  <div class="card">
+    <h3>3.5 評估指標 Evaluation Metrics</h3>
+    <p>以<b>缺陷 defect 為正類 (positive)</b>。TP 真陽／TN 真陰／FP 偽陽／FN 偽陰。</p>
+    <div class="formula">混淆矩陣 Confusion Matrix
+                  實際 good        實際 defect
+  預測 good        TN               FN
+  預測 defect      FP               TP</div>
+    <div class="formula">準確率 Accuracy  = (TP + TN) ÷ (TP + TN + FP + FN)                       目標 &gt; 95%
+精確率 Precision = TP ÷ (TP + FP)                                       目標 &gt; 95%
+召回率 Recall    = TP ÷ (TP + FN)                                       目標 &gt; 97%
+F1 分數 F1-Score = 2 × (Precision × Recall) ÷ (Precision + Recall)     目標 &gt; 96%
+交並比 IoU       = TP ÷ (TP + FP + FN)                                  目標 &gt; 75%</div>
+    <div class="note key"><span class="h">召回率最重要</span>目標將 Recall 設到 97%（高於其他指標）：在品保情境，<b>漏掉一個缺陷 (FN)</b> 比誤殺一個良品 (FP) 代價更高，故優先壓低 FN。判讀指南見 <span class="xref">↗ §7</span>。</div>
+  </div>
+
+  <div class="card">
+    <h3>3.6 熱學視覺化 Thermal Model（示意 illustrative）</h3>
+    <p>將接觸密度反推為示意溫度場，缺失區＝高溫熱點。</p>
+    <div class="formula">溫度場 T(x,y) = Tmin + ( 1 − 接觸密度 ρ(x,y) ) × ( Tmax − Tmin )     單位 °C
+            （量化到整數度，每 1°C 一色，附色階尺）
+
+傅立葉熱傳導 Fourier：  熱流密度向量 q = − k × ∇T               單位 W/m²
+其中  ∇T = ( ∂T/∂x , ∂T/∂y ) ，  k = 等效熱傳導係數</div>
+    <p>預設 <code>Tmin=40°C</code>、<code>Tmax=95°C</code>、<code>k=5</code>。在報告中以彩色梯度圖呈現溫度場，並疊加箭頭表示熱流方向與大小。<span class="xref">↗ §8.3</span></p>
+    <div class="note"><span class="h">符號相容性</span>平台已<b>全面移除 LaTeX</b>，所有數學以 <code>× ÷ ∩ ∪ ≥ ≤ ° Σ √ ∇</code> 等標準 Unicode 呈現，確保任何瀏覽器／PDF 皆不亂碼。</div>
+  </div>
+</section>
+
+<!-- ===== 4 拍攝與資料準備 ===== -->
+<section id="s4">
+  <h2>4. 拍攝與資料準備 <span class="en">Capture &amp; Data Preparation</span></h2>
+  <p class="muted">本章對應「<span class="tag tab">2 資料集</span>」分頁。良好的輸入是準確判定的前提。</p>
+
+  <div class="card">
+    <h3>4.1 拍攝七要點 Capture Guidelines</h3>
+    <ol class="steps alt">
+      <li><span class="sh">拍攝模式選「正方形」 Square mode</span>相機比例設為 <b>1:1</b>，避免長寬變形影響後續區域量測。</li>
+      <li><span class="sh">壓痕轉正、置中 Rotate &amp; center</span>壓痕角度轉正、對齊畫面正中央。</li>
+      <li><span class="sh">四邊預留 20% 留白 20% margin</span>壓痕四邊與畫面邊界各預留 20% 留白（對應 <code>margin=0.20</code>）。</li>
+      <li><span class="sh">原始檔 PNG 匯出 Export PNG</span>以原始 PNG 匯出，保留真實資訊（不壓縮失真、不轉檔）。</li>
+      <li><span class="sh">放入 Input、不自動裁剪、用原圖 No auto-crop</span>照片放入指定資料夾；分析一律使用原圖。</li>
+      <li><span class="sh">缺陷判準 Defect</span>4 邊框與中央，空白缺失 <b>&gt; 20%</b> 接觸面積 ⇒ defect。</li>
+      <li><span class="sh">良品判準 Good</span>4 邊框與中央，空白缺失 <b>≤ 20%</b> 接觸面積 ⇒ good。</li>
+    </ol>
+    <div class="note tip"><span class="h">穩定拍攝小技巧</span>固定光源與距離、避免反光與陰影、感壓紙平貼無皺褶、同一批次用相同相機設定 — 可大幅提升判定一致性。</div>
+  </div>
+
+  <div class="card">
+    <h3>4.2 良品 vs 缺陷 定義 Good vs Defect</h3>
+    <div class="grid g2">
+      <div class="card sub"><h4 style="color:var(--good)">均勻壓痕 GOOD</h4>
+        <p>4 邊框與中央區域，<b>空白缺失 ≤ 20%</b>。顯色均勻飽和、無明顯缺口。</p></div>
+      <div class="card sub"><h4 style="color:var(--bad)">不均勻壓痕 DEFECT</h4>
+        <p>4 邊框與中央區域，<b>空白缺失 &gt; 20%</b>。可見角落／單邊／中央缺口（接觸不良＝熱點）。</p></div>
+    </div>
+    <p class="muted">平台會在「2 資料集」分頁<b>即時繪製</b>兩張示意圖，並標出 5 個量測區；紅框＝缺失區 missing region。</p>
+  </div>
+
+  <div class="card">
+    <h3>4.3 檔名規範 Naming Convention</h3>
+    <p>檔名格式：<code>{split}_{class}_{yymmddhhxxx}.png</code></p>
+    <div class="tbl-wrap"><table>
+      <tr><th>欄位</th><th>意義</th><th>範例</th></tr>
+      <tr><td><code>split</code></td><td>資料子集：train / val / test</td><td><code>train</code></td></tr>
+      <tr><td><code>class</code></td><td>類別：good / defect</td><td><code>good</code></td></tr>
+      <tr><td><code>yymmdd</code></td><td>日期（年月日）</td><td><code>260531</code></td></tr>
+      <tr><td><code>hh</code></td><td>小時</td><td><code>14</code></td></tr>
+      <tr><td><code>xxx</code></td><td>流水號 (100–999)</td><td><code>372</code></td></tr>
+    </table></div>
+    <p>完整範例：<code>train_good_260531 14 372.png</code>（去空白）→ <code>train_good_26053114372.png</code>。在「2 資料集」分頁可按 <span class="uichip alt">產生範例檔名</span> 自動產生一個示例。</p>
+    <div class="note key"><span class="h">關鍵：檔名／資料夾名決定真值</span>平台靠檔名或資料夾名中的 <code>good / defect</code>（或 <code>ok / ng / bad</code>）字樣<b>自動取得真值標註</b>，再與模型預測比對算指標。沒有這些關鍵字 ⇒ 無真值 ⇒ 指標顯示 N/A。<span class="xref">↗ §7.4</span></div>
+  </div>
+
+  <div class="card">
+    <h3>4.4 資料夾結構 Folder Structure</h3>
+    <div class="tree"><b>cpu_imprints_dataset/</b>
+├── <b>train/</b>                          <i>訓練集 Training (60%)</i>
+│   ├── <b>train_defect/</b>
+│   │   └── train_defect_<i>yymmddhhxxx</i>.png
+│   └── <b>train_good/</b>
+│       └── train_good_<i>yymmddhhxxx</i>.png
+├── <b>val/</b>                            <i>驗證集 Validation (15%)</i>
+│   ├── <b>val_defect/</b>
+│   └── <b>val_good/</b>
+└── <b>test/</b>                           <i>測試集 Test (25%)</i>
+    ├── <b>test_defect/</b>
+    └── <b>test_good/</b></div>
+    <p class="muted">「一鍵載入資料集」功能會額外讀取根目錄下的 <code>filename_mapping.csv</code>（欄位含 <code>new_path, split, prediction</code>）。<span class="xref">↗ §5.5</span></p>
+  </div>
+
+  <div class="card">
+    <h3>4.5 資料切分 Split Ratio = 6 : 1.5 : 2.5</h3>
+    <div class="splitbar">
+      <div style="width:60%;background:var(--accent-2)">訓練 Train 60%</div>
+      <div style="width:15%;background:var(--warn)">驗證 Val 15%</div>
+      <div style="width:25%;background:var(--accent)">測試 Test 25%</div>
+    </div>
+    <p>於「2 資料集」分頁輸入<b>總影像數</b>並按 <span class="uichip">計算切分</span>，平台即算出三子集張數（四捨五入）。例如 <code>78</code> 張 → 訓練 47 / 驗證 12 / 測試 19。</p>
+    <div class="note tip"><span class="h">建議</span>每個類別 (good / defect) 各自再做 <b>6:1.5:2.5 分層抽樣 (stratified)</b>，避免類別不平衡造成指標失真。</div>
+  </div>
+
+  <div class="card">
+    <h3>4.6 真值標註來源 Ground-Truth Labeling</h3>
+    <p>平台有兩種取得真值的途徑，皆<b>靠路徑／檔名關鍵字</b>：</p>
+    <ul>
+      <li><b>選擇資料夾</b>：用各分頁的「📁 選擇資料夾」挑 <code>.../train</code> 等，平台依<b>資料夾名</b>判 good/defect。</li>
+      <li><b>一鍵載入</b>：讀 <code>filename_mapping.csv</code> 的路徑欄解析 <code>{split}/{split}_{class}/</code> 取得 split 與真值。</li>
+    </ul>
+    <div class="note bad"><span class="h">校正後才有效</span>若資料夾標註目前是模型<b>自動預標</b>，務必先<b>人工把錯標檔案移到正確資料夾</b>，再用「📁 選擇資料夾」重新載入，指標才反映真實效能。<span class="xref">↗ §10 疑難排解</span></div>
+  </div>
+</section>
+
+<!-- ===== 5 完整操作流程 ===== -->
+<section id="s5">
+  <h2>5. 完整操作流程 <span class="en">Complete Workflow</span></h2>
+
+  <div class="card">
+    <h3>5.1 流程總覽 Workflow Overview</h3>
+    <p>正式作業依序操作三個分頁，再產生報告。三階段在概念上<b>逐級銜接</b>：訓練產生的模型供驗證使用，驗證後的模型供測試使用。</p>
+    <div class="pipe">
+      <div class="pn"><span class="num">3</span><div class="ic">🏋️</div><div class="t">訓練集</div><div class="e">→ cpu_train_*.pth</div></div>
+      <div class="pn"><span class="num">4</span><div class="ic">✅</div><div class="t">驗證集</div><div class="e">依 cpu_train → cpu_val_*.pth</div></div>
+      <div class="pn"><span class="num">5</span><div class="ic">🧪</div><div class="t">測試集</div><div class="e">依 cpu_val → cpu_test_*.pth</div></div>
+      <div class="pn"><span class="num">6</span><div class="ic">📑</div><div class="t">報告</div><div class="e">整合三階段全部照片</div></div>
+    </div>
+    <div class="note"><span class="h">三分頁介面相同</span>訓練／驗證／測試三個分頁的操作介面<b>完全相同</b>（共 7 個區塊 ①~⑦），差別只在用途與模型命名前綴。以下 §5.2 詳述，§5.3、§5.4 僅列差異。</div>
+  </div>
+
+  <!-- 5.2 訓練 -->
+  <div class="card" id="s5-2">
+    <h3>5.2 訓練集操作 Training（七步驟）</h3>
+    <ol class="steps">
+      <li><span class="sh">① 批次載入影像 Batch load</span>
+        三種來源任選其一：
+        <ul>
+          <li><span class="uichip">📁 選擇資料夾</span>：一次載入整個資料夾，<b>依資料夾名自動標註</b> good/defect（建議）。</li>
+          <li><span class="uichip ghost">🖼️ 選擇多個檔案</span>：手動多選影像檔。</li>
+          <li><span class="uichip ghost">✨ 載入示範樣本</span>：12 張合成樣本，供快速試用。</li>
+        </ul>
+        載入後會顯示張數與已標註數（good X / defect Y）。僅接受影像檔（png/jpg/webp/bmp）。</li>
+      <li><span class="sh">② 硬體與模型 Hardware &amp; Model</span>
+        檢視自動偵測的硬體資訊與推薦等級。設定：
+        <ul>
+          <li><b>部署方式</b>：「本機自動下載安裝」或「雲端 API Key」（選雲端時填入 <code>sk-...</code>）。</li>
+          <li><b>辨識模型</b>：由前 5 名下拉選擇（依硬體排序）。</li>
+          <li><b>生成增強模型</b>：由前 5 名下拉選擇（資料增強用）。</li>
+        </ul>
+        可展開「前 5 名模型清單」查看規格與來源。<span class="xref">↗ §附錄 C</span></li>
+      <li><span class="sh">③ 參數與目標 Parameters</span>
+        設定 4 個核心參數：<code>Redness T</code>、<code>Margin</code>、<code>Frame</code>、<code>Blank</code>，可勾選「自動偵測壓痕範圍 autoBBox」。目標值固定顯示於下方。詳見 <span class="xref">↗ §6 參數調校</span>。</li>
+      <li><span class="sh">④ 執行 MCP 自動微調 Run</span>
+        設定<b>最大迭代 Max iter</b>（預設 300，上限 1000），按 <span class="uichip">▶ 開始 訓練 Train</span>。
+        <ul>
+          <li>平台以「座標下降 + 隨機擾動」搜尋最佳門檻，<b>損失 = 1 − F1</b>，逐步接受更優參數。</li>
+          <li><b>收斂即停止 (early stopping)</b>：5 項指標全部超過目標即停止。</li>
+          <li>進度條與狀態列即時顯示 <code>iter k/N</code>、F1、Acc。</li>
+        </ul></li>
+      <li><span class="sh">⑤ 判讀 收斂曲線（1−F1）</span>
+        <span style="color:var(--bad)">橙線＝損失 Loss (1−F1)</span> 應下降；<span style="color:var(--good)">綠線＝準確率 Accuracy</span> 應上升。橫軸為迭代次數。</li>
+      <li><span class="sh">⑥ 判讀指標 Metrics</span>
+        5 張 KPI 卡片顯示各指標數值與是否達標（✓/✗），下方列出混淆矩陣 <code>TP/TN/FP/FN</code> 與已標註樣本數。判讀見 <span class="xref">↗ §7</span>。</li>
+      <li><span class="sh">⑦ 結果縮圖 &amp; 儲存模型</span>
+        檢視結果縮圖（每張標 good/defect 與 maxBlank，紅框＝缺失區）。確認無誤後按 <span class="uichip ghost">💾 儲存模型</span>，下載 <code>cpu_train_yymmddhhmm.pth</code>。此檔名會自動填入「驗證集」分頁的依據模型欄位。</li>
+    </ol>
+    <div class="note warn"><span class="h">未標註時 MCP 無法真正最佳化</span>若已標註樣本 <b>少於 2 張</b>，平台無法計算真實指標，僅顯示「示範收斂曲線」並提示 <i>Unlabeled: demo curve</i>。要真正微調，請確保載入的影像帶有 good/defect 真值。</div>
+  </div>
+
+  <!-- 5.3 驗證 -->
+  <div class="card" id="s5-3">
+    <h3>5.3 驗證集操作 Validation</h3>
+    <p>切到 <span class="tag tab">4 驗證集</span>。介面與步驟<b>同 §5.2</b>，差異如下：</p>
+    <ul>
+      <li>分頁頂端顯示「依訓練模型 <code>cpu_train_…….pth</code> 進行驗證」（由 §5.2 儲存時自動帶入）。</li>
+      <li>載入<b>驗證子集</b>影像（<code>val_good / val_defect</code>）。</li>
+      <li>執行後若達標，儲存模型輸出 <code>cpu_val_yymmddhhmm.pth</code>，並自動帶入「測試集」分頁。</li>
+    </ul>
+    <div class="note tip"><span class="h">目的</span>驗證集用於確認在訓練階段調出的參數，在<b>未直接參與調校</b>的資料上仍維持指標，避免過度貼合 (overfitting)。</div>
+  </div>
+
+  <!-- 5.4 測試 -->
+  <div class="card" id="s5-4">
+    <h3>5.4 測試集操作 Test</h3>
+    <p>切到 <span class="tag tab">5 測試集</span>。介面與步驟<b>同 §5.2</b>，差異如下：</p>
+    <ul>
+      <li>分頁頂端顯示「依驗證模型 <code>cpu_val_…….pth</code> 進行測試」。</li>
+      <li>載入<b>測試子集</b>影像（<code>test_good / test_defect</code>）。</li>
+      <li>測試集應為<b>最終、未曾用於調校</b>的資料，其指標最能代表真實效能。</li>
+      <li>儲存模型輸出 <code>cpu_test_yymmddhhmm.pth</code>。</li>
+    </ul>
+  </div>
+
+  <!-- 5.5 一鍵載入 -->
+  <div class="card" id="s5-5">
+    <h3>5.5 一鍵載入資料集（含真值） One-Click Dataset Load</h3>
+    <p>若已整理好 <code>cpu_imprints_dataset/</code> 並以<b>本機伺服器</b>開啟（<span class="xref">↗ §2.2 方式 B</span>），可在 <span class="tag tab">2 資料集</span> 分頁一次完成全流程：</p>
+    <ol class="steps alt">
+      <li><span class="sh">載入</span>按 <span class="uichip">📂 載入 cpu_imprints_dataset/（含真值）</span>。平台讀取 <code>filename_mapping.csv</code>，依路徑解析 split 與 good/defect 真值，逐張分析。</li>
+      <li><span class="sh">檢視即時指標</span>載入完成後直接顯示三子集分佈與<b>對真值的 5 項指標</b>（含 <code>TP/TN/FP/FN</code>）。</li>
+      <li><span class="sh">產生報告</span>按 <span class="uichip alt">📑 產生含真值指標報告</span>，自動跳到「報告」分頁並建立完整報告。</li>
+      <li><span class="sh">匯出 CSV</span>按 <span class="uichip ghost">⬇ 匯出結果 CSV</span>，輸出 <code>cpu_dataset_yymmddhhmm.csv</code>（含 truth / prediction / correct / 各區覆蓋率）。</li>
+    </ol>
+    <div class="note bad"><span class="h">自我一致性警告</span>若 CSV 的標註來自模型<b>自動預標</b>，指標會趨近 100%（自我一致性），<b>非真實泛化效能</b>。人工校正後再以「📁 選擇資料夾」重載，數字才有效。</div>
+    <div class="note warn"><span class="h">file:// 無法使用本功能</span>直接雙擊開檔時此按鈕會報「找不到 CSV／畫布污染」。請改用本機伺服器，或改用各分頁「📁 選擇資料夾」（不受限制）。</div>
+  </div>
+</section>
+
+<!-- ===== 6 參數調校 ===== -->
+<section id="s6">
+  <h2>6. 參數調校指南 <span class="en">Parameter Tuning Guide</span></h2>
+  <p class="muted">參數位於各分頁「③ 參數與目標」。先理解 §3 原理再調整，可避免盲調。</p>
+
+  <div class="card">
+    <h3>6.1 核心參數 Core Parameters</h3>
+    <div class="grid g3">
+      <div class="pcard"><div class="pn">redness</div><div class="pv">18</div><div class="pd">接觸顯色門檻。↑更嚴格（只算很紅的）→ 接觸判定變少。MCP 搜尋範圍 4–60。</div></div>
+      <div class="pcard"><div class="pn">darkT</div><div class="pv">130</div><div class="pd">暗度門檻；亮度低於此也算接觸。內部固定，補抓深色接觸。</div></div>
+      <div class="pcard"><div class="pn">margin</div><div class="pv">0.20</div><div class="pd">邊距比例 (0–0.4)。對應拍攝四邊 20% 留白。autoBBox 開啟時改自動偵測。</div></div>
+      <div class="pcard"><div class="pn">frame</div><div class="pv">0.30</div><div class="pd">邊框寬度比例 (0.1–0.45)。決定 top/bottom/left/right 帶寬與 center 大小。</div></div>
+      <div class="pcard"><div class="pn">blank</div><div class="pv">0.20</div><div class="pd">空白判定門檻 (=20%)。任一區 Blank 超過即 defect。MCP 範圍 0.05–0.45。</div></div>
+      <div class="pcard"><div class="pn">autoBBox</div><div class="pv">關</div><div class="pd">勾選後自動偵測壓痕範圍（取代固定 margin），適合留白不一致的照片。</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>6.2 熱學參數 Thermal Parameters（報告視覺化用）</h3>
+    <div class="grid g3">
+      <div class="pcard"><div class="pn">Tmin</div><div class="pv">40°C</div><div class="pd">溫度場下限（接觸良好區對應溫度）。</div></div>
+      <div class="pcard"><div class="pn">Tmax</div><div class="pv">95°C</div><div class="pd">溫度場上限（完全缺失區對應溫度）。</div></div>
+      <div class="pcard"><div class="pn">k</div><div class="pv">5</div><div class="pd">等效熱傳導係數，影響熱流向量 q=−k∇T 大小。</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>6.3 目標值 Targets（收斂即停止）</h3>
+    <div class="tbl-wrap"><table>
+      <tr><th>指標</th><th>目標</th><th>程式值</th></tr>
+      <tr><td>準確率 Accuracy</td><td>&gt; 95%</td><td><code>acc = 0.95</code></td></tr>
+      <tr><td>精確率 Precision</td><td>&gt; 95%</td><td><code>prec = 0.95</code></td></tr>
+      <tr><td>召回率 Recall</td><td>&gt; 97%</td><td><code>rec = 0.97</code></td></tr>
+      <tr><td>F1 分數</td><td>&gt; 96%</td><td><code>f1 = 0.96</code></td></tr>
+      <tr><td>交並比 IoU</td><td>&gt; 75%</td><td><code>iou = 0.75</code></td></tr>
+    </table></div>
+    <p class="muted">MCP 以「最大化 F1」為主目標（損失 = 1−F1）。當 5 項<b>全部</b>超過目標即觸發早停。</p>
+  </div>
+
+  <div class="card">
+    <h3>6.4 調校決策建議 Tuning Decisions</h3>
+    <div class="tbl-wrap"><table>
+      <tr><th>觀察到的現象</th><th>可能原因</th><th>建議調整</th></tr>
+      <tr><td>良品被誤判 defect（FP 偏高）</td><td>接觸判定太嚴或門檻太敏感</td><td>調低 <code>redness</code>、或調高 <code>blank</code>（放寬空白容忍）。</td></tr>
+      <tr><td>缺陷被漏判 good（FN 偏高）</td><td>門檻太寬鬆</td><td>調高 <code>redness</code>、或調低 <code>blank</code>（更敏感抓缺失）。</td></tr>
+      <tr><td>邊框量到背景留白</td><td>margin 不符實際留白</td><td>調整 <code>margin</code> 或勾選 <code>autoBBox</code>。</td></tr>
+      <tr><td>中央誤判頻繁</td><td>frame 太大／太小</td><td>調整 <code>frame</code> 改變 center 區大小。</td></tr>
+      <tr><td>整體無法達標</td><td>資料品質或標註問題</td><td>提高拍攝一致性、校正真值標註、增加樣本數。</td></tr>
+    </table></div>
+    <div class="note tip"><span class="h">先讓 MCP 自動找</span>多數情況先按「▶ 開始」讓 MCP 自動搜尋即可。手動調整適用於：資料有特殊偏移、或想固定某參數時。</div>
+  </div>
+</section>
+
+<!-- ===== 7 指標判讀 ===== -->
+<section id="s7">
+  <h2>7. 指標判讀 <span class="en">Metrics Interpretation</span></h2>
+
+  <div class="card">
+    <h3>7.1 KPI 卡片怎麼看 Reading KPI Cards</h3>
+    <p>每張卡片顯示<b>數值</b>與<b>目標</b>，達標亮綠框並標 ✓，未達標亮橙框並標 ✗。報告分頁則以<b>半圓儀表</b>呈現，黃色刻度線標示目標位置。</p>
+  </div>
+
+  <div class="card">
+    <h3>7.2 混淆矩陣與品保意義 Confusion Matrix in QC Terms</h3>
+    <div class="tbl-wrap"><table>
+      <tr><th>符號</th><th>意義</th><th>品保情境</th></tr>
+      <tr><td><b>TP</b> 真陽</td><td>實際 defect，預測 defect</td><td>✅ 正確攔截缺陷</td></tr>
+      <tr><td><b>TN</b> 真陰</td><td>實際 good，預測 good</td><td>✅ 正確放行良品</td></tr>
+      <tr><td><b>FP</b> 偽陽</td><td>實際 good，預測 defect</td><td>⚠️ 誤殺良品（過殺，影響良率）</td></tr>
+      <tr><td><b>FN</b> 偽陰</td><td>實際 defect，預測 good</td><td>🔴 漏判缺陷（最危險，流出風險）</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h3>7.3 指標—行動對照 Metric → Action</h3>
+    <div class="tbl-wrap"><table>
+      <tr><th>指標偏低</th><th>代表</th><th>下一步</th></tr>
+      <tr><td>召回率 Recall 低</td><td>FN 多，漏判缺陷</td><td>最優先處理：調高敏感度（<span class="xref">§6.4</span>），複檢被判 good 的樣本。</td></tr>
+      <tr><td>精確率 Precision 低</td><td>FP 多，過殺良品</td><td>放寬門檻，檢視被判 defect 的良品是否拍攝/標註問題。</td></tr>
+      <tr><td>F1 低</td><td>Precision 與 Recall 失衡</td><td>讓 MCP 重新搜尋；或檢查資料平衡。</td></tr>
+      <tr><td>IoU 低</td><td>預測與真實重疊不足</td><td>多半伴隨整體判別差，回頭檢查標註與門檻。</td></tr>
+      <tr><td>Accuracy 高但 Recall 低</td><td>類別不平衡假象</td><td>勿只看 Accuracy；以 Recall / F1 為準。</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h3>7.4 何時指標顯示 N/A？ When Metrics Are N/A</h3>
+    <ul>
+      <li>影像<b>無 good/defect 真值</b>（檔名/資料夾未含關鍵字）⇒ 5 項指標無法計算，報告改顯示「缺陷率／良品率」。</li>
+      <li>已標註樣本<b>少於 2 張</b>⇒ 無法 MCP 最佳化，僅顯示示範收斂曲線。</li>
+    </ul>
+    <div class="note bad"><span class="h">趨近 100% 要警覺</span>指標異常完美（接近 100%）通常代表<b>標註是模型自動預標</b>（自我一致性），而非真實效能。務必人工校正後重載。<span class="xref">↗ §10</span></div>
+  </div>
+</section>
+
+<!-- ===== 8 報告功能 ===== -->
+<section id="s8">
+  <h2>8. 報告功能詳解 <span class="en">Report Features</span></h2>
+  <p class="muted">本章對應 <span class="tag tab">6 報告</span> 分頁。報告會整合訓練／驗證／測試<b>全部照片</b>；若三者皆空，平台會以 8 張示範樣本建立報告。</p>
+
+  <div class="card">
+    <h3>8.1 產生與匯出 Build &amp; Export</h3>
+    <ul>
+      <li><span class="uichip">產生 / 更新報告</span>：建立或重新整理整份報告。</li>
+      <li><span class="uichip alt">匯出 PDF</span>：以 <code>cpu_test_yymmddhhmm.pdf</code> 命名，透過瀏覽器列印對話框輸出。報告維持深色主題（已設定 <code>print-color-adjust</code>，列印時請勾選「背景圖形」）。</li>
+    </ul>
+    <div class="note tip"><span class="h">列印只輸出報告</span>列印樣式會隱藏導覽與其他分頁，僅輸出報告內容，版面乾淨。</div>
+  </div>
+
+  <div class="card">
+    <h3>8.2 報告章節 Report Sections</h3>
+    <div class="tbl-wrap"><table>
+      <tr><th>章節</th><th>內容</th></tr>
+      <tr><td>6.1 KPI 儀表板</td><td>半圓儀表呈現 5 項指標（有真值時）或缺陷率／良品率（無真值時），含混淆矩陣摘要。</td></tr>
+      <tr><td>6.1b 切分摘要</td><td>有 split 資訊時，列出 train/val/test 的張數、good/defect 與缺陷率。</td></tr>
+      <tr><td>6.2 全部照片三聯圖</td><td>每張影像：左＝ControlNet 缺失標註、中＝溫度梯度＋熱流向量、右＝色階尺，附該張覆蓋率與推估峰溫。</td></tr>
+      <tr><td>6.3 RCA 知識庫</td><td>缺失型態 → 根因 → 對策 → 依據對照表。<span class="xref">↗ §9</span></td></tr>
+      <tr><td>6.4 資料庫</td><td>寫入／讀取／匯出 IndexedDB 記錄。</td></tr>
+      <tr><td>6.5 雜湊鏈</td><td>將報告上鏈並驗證完整性。</td></tr>
+      <tr><td>6.6 資安防護</td><td>AES-GCM 加密報告摘要、稽核軌跡。</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h3>8.3 三聯圖判讀 Reading the Triptych</h3>
+    <div class="grid g3">
+      <div class="pcard"><b>左：ControlNet 標註</b><div class="pd">原圖疊加 5 區框。<span style="color:var(--bad-strong)">紅虛線框＝缺失區</span>並標 <code>#編號 區域 缺失%</code>；<span style="color:var(--good)">綠框＝正常</span>。底部 badge 顯示判定、maxBlank、整體空白。</div></div>
+      <div class="pcard"><b>中：溫度梯度＋熱流</b><div class="pd">每 1°C 一色的溫度場；黑色箭頭＝熱流密度向量 q=−k∇T，指向溫度下降方向，長度代表強度。</div></div>
+      <div class="pcard"><b>右：色階尺 Colorbar</b><div class="pd">溫度—顏色對照（°C）。藍→青→綠→黃→橙→紅，紅＝最熱（缺失熱點）。</div></div>
+    </div>
+    <p class="muted">右側資訊欄另列：判定、maxBlank、整體空白、缺失區清單、推估峰溫 Tmax、各區覆蓋率。</p>
+  </div>
+
+  <div class="card">
+    <h3>8.4 資料庫 / 雜湊鏈 / 資安 Database / Hash Chain / Security</h3>
+    <ul>
+      <li><b>資料庫 IndexedDB</b>：按「寫入資料庫」存入每張結果（時間/檔名/判定/maxBlank/真值）；可「讀取」與「匯出 JSON」（<code>{reportId}_db.json</code>）。資料存於瀏覽器本機。</li>
+      <li><b>雜湊鏈 Hash Chain</b>：按「將本報告上鏈」以 SHA-256 雜湊鏈＋輕量工作量證明（前置 2 個 0）記錄報告摘要；「驗證完整性」可檢查是否遭竄改。</li>
+      <li><b>資安 Security</b>：輸入通關密語後按「AES 加密報告摘要」，以 AES-GCM 256（PBKDF2 12 萬次迭代）產生密文；所有操作寫入稽核軌跡 audit log。</li>
+    </ul>
+    <div class="note"><span class="h">用途</span>這些機制提供<b>本機完整性與機密性</b>佐證（防竄改、可加密、可稽核），適合品保紀錄留存。資料皆不離開瀏覽器。</div>
+  </div>
+</section>
+
+<!-- ===== 9 RCA ===== -->
+<section id="s9">
+  <h2>9. 根因分析速查 <span class="en">RCA Quick Reference</span></h2>
+  <p class="muted">對應報告「6.3 RCA 根因分析知識庫」。依缺失型態快速對應可能根因與對策。</p>
+  <div class="card">
+    <div class="tbl-wrap"><table>
+      <tr><th>缺失型態 Pattern</th><th>可能根因 Root Cause</th><th>對策 Action</th><th>依據 Ref</th></tr>
+      <tr><td><b>角落／對角缺失</b><br><span class="en">Corner / diagonal</span></td><td>散熱器固定壓力不均、四角螺絲扭力不一致、CPU 頂蓋 (IHS) 翹曲 (warping)。</td><td>以對角線順序分次鎖附並校正扭力 (torque spec)；檢查 IHS 平整度；必要時加裝背板。</td><td class="muted">Intel TMDG；JEDEC</td></tr>
+      <tr><td><b>單邊缺失</b><br><span class="en">One-side</span></td><td>安裝傾斜、主機板／底座不平、立柱 (standoff) 高度不一。</td><td>重新安裝、檢查 standoff 高度與主機板翹曲；確認散熱器底面與 IHS 平行。</td><td class="muted">Fujifilm Prescale 手冊</td></tr>
+      <tr><td><b>中央缺失</b><br><span class="en">Center</span></td><td>導熱介面材料 (TIM) 量不足、散熱器底面中央凹陷 (concave)。</td><td>增加 TIM 用量或改點塗法；研磨/拋光底面；確認泵出 (pump-out) 效應。</td><td class="muted">TIM 技術文件</td></tr>
+      <tr><td><b>整體偏淡</b><br><span class="en">Overall light</span></td><td>總鎖附壓力不足、彈簧老化、扭力低於規格。</td><td>提升至規格扭力；更換彈簧／扣具；確認壓力落在感壓紙量程。</td><td class="muted">Prescale 量程規格</td></tr>
+      <tr><td><b>局部過深</b><br><span class="en">Local over-press</span></td><td>異物夾入、IHS 凸起、接觸面顆粒污染。</td><td>清潔接觸面、檢查異物與毛邊；確認平面度。</td><td class="muted">潔淨度 SOP</td></tr>
+    </table></div>
+    <div class="note tip"><span class="h">操作建議</span>對照報告三聯圖的<b>紅框位置</b>與本表「缺失型態」即可定位問題；將對策回饋產線後，重新拍攝壓痕驗證改善。</div>
+  </div>
+</section>
+
+<!-- ===== 10 疑難排解 ===== -->
+<section id="s10">
+  <h2>10. 疑難排解 <span class="en">Troubleshooting</span></h2>
+  <div class="card">
+    <details class="acc" open><summary>「找不到 filename_mapping.csv／無法讀取像素」</summary>
+      <div class="body"><p><b>原因</b>：以 <code>file://</code> 雙擊開檔，瀏覽器禁止讀取本機檔與已污染畫布。<br>
+      <b>解法</b>：① 改用本機伺服器（<span class="xref">§2.2 方式 B</span>）；或 ② 改用各分頁「📁 選擇資料夾」載入（不受限制，仍依資料夾名取得真值）。</p></div></details>
+
+    <details class="acc"><summary>指標趨近 100%，好得不真實</summary>
+      <div class="body"><p><b>原因</b>：標註來自模型<b>自動預標</b>，指標只反映自我一致性。<br>
+      <b>解法</b>：人工把錯標檔案移到正確的 good/defect 資料夾，再用「📁 選擇資料夾」重新載入。<span class="xref">↗ §4.6、§7.4</span></p></div></details>
+
+    <details class="acc"><summary>指標顯示 N/A 或只看到缺陷率</summary>
+      <div class="body"><p><b>原因</b>：影像沒有 good/defect 真值（檔名/資料夾缺關鍵字）。<br>
+      <b>解法</b>：依 <span class="xref">§4.3 命名規範</span>整理檔名與資料夾，含 <code>good</code>/<code>defect</code>（或 <code>ok</code>/<code>ng</code>/<code>bad</code>）字樣。</p></div></details>
+
+    <details class="acc"><summary>按「開始」後只顯示「示範收斂曲線」</summary>
+      <div class="body"><p><b>原因</b>：已標註樣本少於 2 張，無法計算真實指標。<br>
+      <b>解法</b>：載入帶真值的影像（至少 2 張、建議 good/defect 皆有）。</p></div></details>
+
+    <details class="acc"><summary>未完全達標（已達迭代上限）</summary>
+      <div class="body"><p><b>原因</b>：在搜尋上限內 5 項指標未全數達標。平台會保留<b>最佳 F1</b> 的參數。<br>
+      <b>解法</b>：提高 Max iter（上限 1000）、改善拍攝一致性、校正標註、增加樣本，或依 <span class="xref">§6.4</span> 手動微調。</p></div></details>
+
+    <details class="acc"><summary>匯出的 PDF 變成白底／缺少色塊</summary>
+      <div class="body"><p><b>原因</b>：列印對話框未啟用背景圖形。<br>
+      <b>解法</b>：在列印設定中勾選「<b>背景圖形 / Background graphics</b>」，即可保留深色主題與彩色圖。</p></div></details>
+
+    <details class="acc"><summary>裸紙（完全無接觸）判定不穩</summary>
+      <div class="body"><p><b>原因</b>：感壓紙暖色與極淡接觸在色彩上重疊，<b>無法穩定自動區分</b>純裸紙。<br>
+      <b>解法</b>：這是方法先天限制。請確保拍攝的是<b>有受壓壓痕</b>的感壓紙；裸紙不應納入待測。<span class="xref">↗ §3.4</span></p></div></details>
+
+    <details class="acc"><summary>環境晶片顯示等級 LOW</summary>
+      <div class="body"><p><b>原因</b>：偵測到核心數/記憶體較低或無 WebGPU。<br>
+      <b>影響</b>：不影響本平台分析（皆為輕量運算）；僅影響「推薦模型排序」。可正常使用所有功能。</p></div></details>
+  </div>
+</section>
+
+<!-- ===== 11 FAQ ===== -->
+<section id="s11">
+  <h2>11. 常見問題 <span class="en">FAQ</span></h2>
+  <div class="card">
+    <details class="acc" open><summary>Q1. 我的影像會被上傳嗎？</summary>
+      <div class="body"><p>不會。所有處理皆在你的瀏覽器本機完成，<b>不上傳任何資料</b>。</p></div></details>
+    <details class="acc"><summary>Q2. 下載的 .pth 是真的 PyTorch 權重嗎？</summary>
+      <div class="body"><p>不是 PyTorch 張量權重。它是<b>瀏覽器訓練的門檻型參數</b>（JSON 內容，含已學參數、硬體、目標與指標），以 <code>.pth</code> 命名以符合工作流規格。<span class="xref">↗ §1.4</span></p></div></details>
+    <details class="acc"><summary>Q3. 需要網路或安裝任何東西嗎？</summary>
+      <div class="body"><p>基本操作不需要，可完全離線。只有「一鍵載入資料集」需要一個本機伺服器來讀取檔案。</p></div></details>
+    <details class="acc"><summary>Q4. 為何召回率目標 (97%) 比其他指標高？</summary>
+      <div class="body"><p>品保上「漏判缺陷 (FN)」風險最高，故優先壓低 FN、拉高 Recall。<span class="xref">↗ §3.5、§7</span></p></div></details>
+    <details class="acc"><summary>Q5. 一定要分訓練/驗證/測試三步嗎？</summary>
+      <div class="body"><p>若只是快速判定一批照片，可只在單一分頁載入並執行，再產生報告。但要評估<b>泛化效能</b>，建議完整走三階段並以測試集為準。</p></div></details>
+    <details class="acc"><summary>Q6. 可以一次處理幾張？</summary>
+      <div class="body"><p>沒有硬性上限；結果縮圖最多顯示 60 張、報告三聯圖會渲染全部影像。張數越多渲染越久，平台會分批讓出畫面避免卡頓。</p></div></details>
+    <details class="acc"><summary>Q7. 平台支援哪些影像格式？</summary>
+      <div class="body"><p>PNG / JPG / JPEG / WEBP / BMP。拍攝建議用<b>原始 PNG</b> 以保留資訊。</p></div></details>
+  </div>
+</section>
+
+<!-- ===== 12 安全與隱私 ===== -->
+<section id="s12">
+  <h2>12. 安全、隱私與合規 <span class="en">Security, Privacy &amp; Compliance</span></h2>
+  <div class="card">
+    <ul>
+      <li><b>本機運算 Local-only</b>：影像與結果不離開瀏覽器，杜絕外洩。</li>
+      <li><b>完整性 Integrity</b>：雜湊鏈防竄改，任一筆遭改即驗證失敗。</li>
+      <li><b>機密性 Confidentiality</b>：AES-GCM 256 位元加密（PBKDF2 金鑰派生）保護匯出摘要。</li>
+      <li><b>稽核 Audit</b>：所有操作寫入稽核軌跡 audit log，可於報告展開檢視。</li>
+      <li><b>輸入驗證 Input validation</b>：僅接受影像檔，防止惡意檔注入。</li>
+    </ul>
+    <div class="note tip"><span class="h">合規對應</span>平台設計參照 ISO 9001 品質管理精神（可追溯、可稽核），並以 APA 7 引用學術與產業來源。<span class="xref">↗ References</span></div>
+  </div>
+</section>
+
+<!-- ===== 附錄 A 名詞 ===== -->
+<section id="aa">
+  <h2>附錄 A · 名詞對照表 <span class="en">Glossary</span></h2>
+  <div class="card"><div class="tbl-wrap"><table>
+    <tr><th>術語</th><th>英文</th><th>說明</th></tr>
+    <tr><td>感壓紙</td><td>Pressure-sensitive film / Prescale</td><td>受壓後顯色的測壓薄膜，用於量測接觸壓力分佈。</td></tr>
+    <tr><td>壓痕</td><td>Imprint</td><td>感壓紙受壓後的顯色圖樣。</td></tr>
+    <tr><td>頂蓋</td><td>IHS (Integrated Heat Spreader)</td><td>CPU 上方的金屬散熱蓋。</td></tr>
+    <tr><td>導熱介面材料</td><td>TIM</td><td>填補 IHS 與散熱器微觀空隙的導熱膏／墊片。</td></tr>
+    <tr><td>接觸密度</td><td>Contact density</td><td>網格內接觸像素比例 (0–1)。</td></tr>
+    <tr><td>覆蓋率／空白率</td><td>Coverage / Blank</td><td>區域接觸比例／其補數 (1−Coverage)。</td></tr>
+    <tr><td>混淆矩陣</td><td>Confusion matrix</td><td>TP/TN/FP/FN 統計表。</td></tr>
+    <tr><td>交並比</td><td>IoU</td><td>預測與真實的交集／聯集比。</td></tr>
+    <tr><td>早停</td><td>Early stopping</td><td>達標即停止迭代。</td></tr>
+    <tr><td>MCP 微調</td><td>Auto-tuning</td><td>門檻參數的座標下降＋隨機搜尋最佳化。</td></tr>
+    <tr><td>ControlNet 標註</td><td>—</td><td>於原圖框出並標示缺失區的視覺化。</td></tr>
+    <tr><td>熱流密度向量</td><td>Heat flux q=−k∇T</td><td>傅立葉熱傳導，指向溫度下降方向。</td></tr>
+    <tr><td>根因分析</td><td>RCA</td><td>由缺失型態回推製程根因與對策。</td></tr>
+  </table></div></div>
+</section>
+
+<!-- ===== 附錄 B 檔名路徑 ===== -->
+<section id="ab">
+  <h2>附錄 B · 檔名與路徑速查 <span class="en">File &amp; Path Reference</span></h2>
+  <div class="card"><div class="tbl-wrap"><table>
+    <tr><th>項目</th><th>格式 / 範例</th></tr>
+    <tr><td>影像檔名</td><td><code>{split}_{class}_{yymmddhhxxx}.png</code> → <code>train_good_26053114372.png</code></td></tr>
+    <tr><td>資料集根</td><td><code>cpu_imprints_dataset/</code></td></tr>
+    <tr><td>子集資料夾</td><td><code>train/train_good/</code>、<code>val/val_defect/</code>、<code>test/test_good/</code> …</td></tr>
+    <tr><td>對照表</td><td><code>cpu_imprints_dataset/filename_mapping.csv</code>（欄位 <code>new_path, split, prediction</code>）</td></tr>
+    <tr><td>訓練模型</td><td><code>cpu_train_yymmddhhmm.pth</code></td></tr>
+    <tr><td>驗證模型</td><td><code>cpu_val_yymmddhhmm.pth</code></td></tr>
+    <tr><td>測試模型</td><td><code>cpu_test_yymmddhhmm.pth</code></td></tr>
+    <tr><td>報告 PDF</td><td><code>cpu_test_yymmddhhmm.pdf</code></td></tr>
+    <tr><td>結果 CSV</td><td><code>cpu_dataset_yymmddhhmm.csv</code></td></tr>
+    <tr><td>資料庫匯出</td><td><code>{reportId}_db.json</code></td></tr>
+  </table></div></div>
+</section>
+
+<!-- ===== 附錄 C 模型 ===== -->
+<section id="ac">
+  <h2>附錄 C · 推薦模型對照表 <span class="en">Recommended Models</span></h2>
+  <div class="card">
+    <h4>辨識（分類 / 分割）Recognition</h4>
+    <div class="tbl-wrap"><table>
+      <tr><th>模型</th><th>來源</th><th>規格</th><th>說明</th></tr>
+      <tr><td>EfficientNet-B0</td><td>Google</td><td>輕量 5.3M 參數</td><td>低資源裝置首選，速度快。</td></tr>
+      <tr><td>ResNet-50</td><td>Microsoft</td><td>25.6M 參數</td><td>穩健基線，遷移學習成熟。</td></tr>
+      <tr><td>ConvNeXt-Tiny</td><td>Meta</td><td>28M 參數</td><td>現代卷積，精度高。</td></tr>
+      <tr><td>ViT-B/16</td><td>Google</td><td>86M 參數</td><td>大資料下表現強，需較多算力。</td></tr>
+      <tr><td>YOLOv8-cls / -seg</td><td>Ultralytics</td><td>可調</td><td>即時分類＋缺失區分割定位。</td></tr>
+    </table></div>
+    <h4>生成增強（資料增強）Generation</h4>
+    <div class="tbl-wrap"><table>
+      <tr><th>模型</th><th>來源</th><th>規格</th><th>說明</th></tr>
+      <tr><td>SDXL-Turbo</td><td>Stability AI</td><td>~7GB VRAM</td><td>快速合成壓痕增強樣本；單步推理。</td></tr>
+      <tr><td>Stable Diffusion XL 1.0</td><td>Stability AI</td><td>~10GB VRAM</td><td>高品質條件式生成，配合 ControlNet。</td></tr>
+      <tr><td>FLUX.1 [schnell]</td><td>Black Forest Labs</td><td>~12GB VRAM</td><td>高保真、少步數，細節佳。</td></tr>
+      <tr><td>Kandinsky 3</td><td>AI-Forever</td><td>~8GB VRAM</td><td>多語提示、紋理生成良好。</td></tr>
+      <tr><td>ControlNet (Canny/Depth)</td><td>lllyasviel</td><td>+2GB VRAM</td><td>以邊緣/深度條件控制壓痕輪廓。</td></tr>
+    </table></div>
+    <div class="note"><span class="h">硬體排序</span>下拉清單會依偵測到的等級（high / mid / low）重新排序「前 5 名」，高階優先較大模型，低階優先輕量模型。</div>
+  </div>
+</section>
+
+<!-- ===== 附錄 D 技術規格 ===== -->
+<section id="ad">
+  <h2>附錄 D · 技術規格與預設值 <span class="en">Technical Specifications</span></h2>
+  <div class="card"><div class="tbl-wrap"><table>
+    <tr><th>項目</th><th>值</th><th>說明</th></tr>
+    <tr><td>分析畫布 ASZ</td><td><code>240 × 240</code></td><td>影像縮放後的分析尺寸。</td></tr>
+    <tr><td>密度網格 GRID</td><td><code>48 × 48</code></td><td>接觸密度與溫度場解析度。</td></tr>
+    <tr><td>redness 門檻</td><td><code>18</code></td><td>接觸顯色判據（MCP 範圍 4–60）。</td></tr>
+    <tr><td>darkT 門檻</td><td><code>130</code></td><td>暗度接觸判據。</td></tr>
+    <tr><td>margin 邊距</td><td><code>0.20</code></td><td>內容區邊距（0–0.4）。</td></tr>
+    <tr><td>frame 邊框</td><td><code>0.30</code></td><td>邊框寬度比例（0.1–0.45）。</td></tr>
+    <tr><td>blank 空白門檻</td><td><code>0.20</code></td><td>缺失判定門檻（MCP 範圍 0.05–0.45）。</td></tr>
+    <tr><td>Tmin / Tmax</td><td><code>40 / 95 °C</code></td><td>溫度場範圍。</td></tr>
+    <tr><td>k 熱傳導係數</td><td><code>5</code></td><td>熱流向量縮放。</td></tr>
+    <tr><td>MCP 最大迭代</td><td><code>300（上限 1000）</code></td><td>收斂即停止。</td></tr>
+    <tr><td>切分比例</td><td><code>60 : 15 : 25</code></td><td>train : val : test（6:1.5:2.5）。</td></tr>
+    <tr><td>目標指標</td><td><code>Acc&gt;95 / Prec&gt;95 / Rec&gt;97 / F1&gt;96 / IoU&gt;75 (%)</code></td><td>全數收斂即停止。</td></tr>
+    <tr><td>雜湊鏈 PoW</td><td><code>前置 2 個 0</code></td><td>SHA-256 輕量工作量證明。</td></tr>
+    <tr><td>加密</td><td><code>AES-GCM 256 / PBKDF2 ×120000</code></td><td>報告摘要加密。</td></tr>
+  </table></div></div>
+</section>
+
+<!-- ===== 參考文獻 ===== -->
+<section id="refs">
+  <h2>參考文獻 <span class="en">References（APA 7th）</span></h2>
+  <div class="card">
+    <p class="muted">資料來源涵蓋期刊、文獻、政府、產業公開資訊、GitHub 與專利，與平台「7 參考文獻」分頁一致。</p>
+    <ol style="line-height:1.9;padding-left:1.3em">
+      <li>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). Deep residual learning for image recognition. <i>CVPR</i> (pp. 770–778). IEEE.</li>
+      <li>Ronneberger, O., Fischer, P., &amp; Brox, T. (2015). U-Net: Convolutional networks for biomedical image segmentation. <i>MICCAI</i> (pp. 234–241). Springer.</li>
+      <li>Tan, M., &amp; Le, Q. V. (2019). EfficientNet: Rethinking model scaling for convolutional neural networks. <i>ICML</i> (pp. 6105–6114). PMLR.</li>
+      <li>Dosovitskiy, A., et al. (2021). An image is worth 16×16 words: Transformers for image recognition at scale. <i>ICLR</i>.</li>
+      <li>Liu, Z., et al. (2022). A ConvNet for the 2020s. <i>CVPR</i> (pp. 11976–11986). IEEE.</li>
+      <li>Zhang, L., Rao, A., &amp; Agrawala, M. (2023). Adding conditional control to text-to-image diffusion models. <i>ICCV</i> (pp. 3836–3847). IEEE.</li>
+      <li>Selvaraju, R. R., et al. (2017). Grad-CAM: Visual explanations from deep networks via gradient-based localization. <i>ICCV</i> (pp. 618–626). IEEE.</li>
+      <li>FUJIFILM Corporation. (2023). <i>Prescale: Pressure measurement film — Technical information and handling guide.</i> FUJIFILM.</li>
+      <li>Intel Corporation. (2020). <i>Thermal mechanical design guidelines (TMDG) for LGA socket processors.</i> Intel.</li>
+      <li>International Organization for Standardization. (2015). <i>ISO 9001:2015 Quality management systems — Requirements.</i> ISO.</li>
+      <li>Jocher, G., Chaurasia, A., &amp; Qiu, J. (2023). <i>Ultralytics YOLO (Version 8)</i> [Computer software]. GitHub.</li>
+    </ol>
+    <div class="note">完整 APA 7 清單（含 DOI / 連結、Nakamoto 2008、專利 US5663115A、CNS 標準等）請見平台「<span class="tag tab">7 參考文獻</span>」分頁。</div>
+  </div>
+</section>
+
+<footer class="doc">
+  CPU 壓痕智慧檢測平台 · 操作手冊 Rev. 1.0 · 對應軟體 v2.0 ·
+  護眼深色模式 · 本機運算不外傳 · 繁中 / English
+</footer>
+
+</main>
+</div>
+
+<button class="backtop" id="backtop" title="回到頂端 Back to top">↑</button>
+
+<script>
+"use strict";
+/* 側欄收合（行動版） mobile sidebar toggle */
+const toc=document.getElementById('toc'), menuBtn=document.getElementById('menuBtn');
+if(menuBtn){ menuBtn.onclick=()=>toc.classList.toggle('open'); }
+/* 點連結後在行動版自動收合 */
+document.querySelectorAll('#navlinks a').forEach(a=>a.addEventListener('click',()=>{
+  if(window.innerWidth<=920) toc.classList.remove('open');
+}));
+
+/* 回到頂端 back-to-top */
+const bt=document.getElementById('backtop');
+window.addEventListener('scroll',()=>{ bt.classList.toggle('show',window.scrollY>500); });
+bt.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+
+/* 捲動高亮目錄 scroll-spy */
+const links=[...document.querySelectorAll('#navlinks a')];
+const map=new Map(); links.forEach(a=>{ const id=a.getAttribute('href').slice(1); const el=document.getElementById(id); if(el) map.set(el,a); });
+const spy=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){
+    links.forEach(l=>l.classList.remove('active'));
+    const a=map.get(e.target); if(a) a.classList.add('active');
+  }});
+},{rootMargin:'-10% 0px -75% 0px',threshold:0});
+map.forEach((a,el)=>spy.observe(el));
+</script>
+</body>
+</html>
