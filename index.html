@@ -1048,11 +1048,11 @@ function drawLoss(key,loss,acc,opts){
   ctx.fillStyle='#ccff99'; ctx.font='12px monospace'; ctx.textAlign='center';
   ctx.fillText('迭代次數 Iteration',(padL+W-padR)/2, H-14);
   ctx.save(); ctx.translate(14,(padT+H-padB)/2); ctx.rotate(-Math.PI/2);
-  ctx.fillStyle='#ff8a5c'; ctx.fillText('損失 Loss (1−F1)',0,0); ctx.restore();
+  ctx.fillStyle='#ff8a5c'; ctx.fillText('1−F1（門檻搜尋・非訓練損失）',0,0); ctx.restore();
   ctx.save(); ctx.translate(W-12,(padT+H-padB)/2); ctx.rotate(Math.PI/2);
   ctx.fillStyle='#9be37d'; ctx.fillText('準確率 Accuracy',0,0); ctx.restore();
   // legend
-  ctx.textAlign='left';ctx.fillStyle='#ff8a5c';ctx.fillText('— Loss',padL+6,padT+12);
+  ctx.textAlign='left';ctx.fillStyle='#ff8a5c';ctx.fillText('— 1−F1',padL+6,padT+12);
   ctx.fillStyle='#9be37d';ctx.fillText('— Accuracy',padL+70,padT+12);
   ctx.fillStyle='#a9d97f';ctx.fillText(opts.title,W-padR-90,padT+12);
 }
