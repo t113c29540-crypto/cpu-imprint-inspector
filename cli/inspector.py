@@ -31,8 +31,8 @@ v1.2 新增：--review 規則式＋Opus 邊界覆核（諮詢式）。
   偽陽性。預設純離線；--review 才會把邊界影像送 Anthropic API（需
   ANTHROPIC_API_KEY），無金鑰時降級為僅標出邊界待覆核清單（仍離線）。
 
-⚠ 本程式等價於線上工具按「執行」。刻意不移植「訓練」（自動微調參數）——
-  訓練會使參數偏離論文操作點，論文所有數據皆以固定操作點計算。
+⚠ 本程式等價於線上工具按「執行」。刻意不移植「校準」（自動微調門檻參數）——
+  校準會使參數偏離論文操作點，論文所有數據皆以固定操作點計算。
 
 用法：
   python3 inspector.py ./review                      # 資料夾（路徑含真值→自動算指標）
@@ -173,9 +173,11 @@ def label_of(path_str):
     return None
 
 def split_of(path_str):
+    # 認 cal（校準）為主，並相容舊資料夾名 train
     parts = [p.lower() for p in Path(path_str).parts]
-    for sp in ("train", "val", "test"):
-        if any(sp == q or q.startswith(sp + "_") for q in parts): return sp
+    for sp in ("cal", "train", "val", "test"):
+        if any(sp == q or q.startswith(sp + "_") for q in parts):
+            return "cal" if sp == "train" else sp   # 舊 train 視為 cal（校準集）
     return ""
 
 # ---------------- 指標（與線上工具 metrics 一致） ----------------
@@ -399,7 +401,7 @@ def draw_overlay(pil_img, res, blank_thr, out_path):
 def main():
     ap = argparse.ArgumentParser(
         description="CPU 壓痕檢測器（線上工具 v2.1 之 Python CLI 移植，固定論文操作點）",
-        epilog="⚠ 不提供「訓練」：自動微調參數會偏離論文操作點，故刻意不移植。",
+        epilog="⚠ 不提供「校準」：自動微調門檻參數會偏離論文操作點，故刻意不移植。",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     ap.add_argument("input", nargs="?", help="影像檔或資料夾（遞迴；路徑含 defect/good 即真值）；"
                     "--thermal --coverage 情境推算或 --list-tims 時可省略")
