@@ -1,0 +1,28 @@
+# ── 隱私/機密：真實壓痕照片與資料一律不入庫 ──
+photos/
+**/*.JPG
+**/*.jpg
+**/*.jpeg
+**/*.png
+!preprocessing/**/*.png
+*.csv
+*.json
+!package.json
+# ── 系統/IDE 雜物 ──
+.DS_Store
+**/.DS_Store
+.idea/
+__pycache__/
+**/__pycache__/
+*.pyc
+.venv/
+venv/
+# ── 產出物（報告/影片/中繼）──
+*.docx
+*.pdf
+*.mp4
+*.aiff
+*.wav
+影片素材/
+最終交付*/
+FN案例/
